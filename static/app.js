@@ -7,31 +7,10 @@ const checkEl = document.getElementById('check');
 const statusEl = document.getElementById('status');
 const progressEl = document.getElementById('progress');
 const resultsEl = document.getElementById('results');
-const viewToggleEl = document.getElementById('viewToggle');
 
 let pollTimer = null;
 let runStartedAt = 0;
 let timerInterval = null;
-let viewMode = 'desktop';
-
-function isMobileDevice() {
-  return window.matchMedia('(max-width: 700px)').matches ||
-    (window.matchMedia('(pointer: coarse)').matches && window.matchMedia('(hover: none)').matches);
-}
-
-function setViewMode(mode) {
-  viewMode = mode === 'mobile' ? 'mobile' : 'desktop';
-  document.body.classList.toggle('mobile-ui', viewMode === 'mobile');
-  document.body.classList.toggle('desktop-ui', viewMode === 'desktop');
-  viewToggleEl.setAttribute('aria-pressed', String(viewMode === 'mobile'));
-  viewToggleEl.textContent = viewMode === 'mobile' ? 'Switch to Desktop view' : 'Switch to Mobile view';
-  hidePreview();
-  if (viewMode === 'mobile') {
-    document.querySelectorAll('.card-result').forEach(section => section.style.removeProperty('width'));
-  } else if (!resultsEl.classList.contains('hidden')) {
-    requestAnimationFrame(fitResultSections);
-  }
-}
 
 function parseCards(text) {
   return text.split(/\r?\n|\s*,\s*(?=\d+\s+)/)
@@ -39,12 +18,7 @@ function parseCards(text) {
     .filter(Boolean);
 }
 
-function money(value, eurJpyRate = null) {
-  const yen = `¥${Number(value).toLocaleString('en-US')}`;
-  return Number.isFinite(eurJpyRate) && eurJpyRate > 0
-    ? `${yen} <span class="euro-price">(€ ${(Number(value) / eurJpyRate).toFixed(2)})</span>`
-    : yen;
-}
+function money(value) { return `¥${Number(value).toLocaleString('en-US')}`; }
 function escapeHtml(s) {
   return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 }
@@ -91,33 +65,7 @@ function previewButton(row) {
   return `<span class="preview-button" tabindex="0" data-image-url="${image}" data-image-title="${title}" aria-label="Preview card image">Preview</span>`;
 }
 
-function mobileListingCard(row, eurJpyRate, heading = '') {
-  const title = escapeHtml(row.title || heading);
-  return `<article class="mobile-listing-card">
-    ${heading ? `<div class="mobile-card-heading">${escapeHtml(heading)}</div>` : ''}
-    <div class="mobile-card-price">${money(row.price, eurJpyRate)}</div>
-    <div class="mobile-card-meta"><span>${escapeHtml(row.language)}</span><span>${escapeHtml(row.expansion)}</span><span>${finishText(row)}</span></div>
-    <div class="mobile-card-title">${title}</div>
-    <div class="mobile-card-actions">${listingButton(row)}${previewButton(row)}</div>
-  </article>`;
-}
-
-function mobileFilterPanel(prefix, values) {
-  return `<div class="mobile-filter-panel" id="${prefix}-mobile-filters" hidden>
-    <label class="filter-control">Max price (¥)<input id="${prefix}-mobile-max" type="number" min="0" step="1" placeholder="No limit"></label>
-    ${selectHtml(`${prefix}-mobile-language`, 'Language', values.language)}
-    ${selectHtml(`${prefix}-mobile-expansion`, 'Expansion', values.expansion)}
-    ${selectHtml(`${prefix}-mobile-finish`, 'Finish', values.finish)}
-    <label class="filter-control title-filter">Title contains<input id="${prefix}-mobile-title" type="text" placeholder="Search title"></label>
-    <button class="clear-filters mobile-clear" type="button">Clear filters</button>
-  </div>`;
-}
-
-function mobileSortHtml(prefix, options) {
-  return `<label class="mobile-sort">Sort by<select id="${prefix}-mobile-sort">${options.map(([value,label]) => `<option value="${value}">${label}</option>`).join('')}</select></label>`;
-}
-
-function renderTable(container, rows, keyPrefix, eurJpyRate = null, options = {}) {
+function renderTable(container, rows, keyPrefix, options = {}) {
   const state = {
     sort: 'price',
     direction: 'asc',
@@ -127,131 +75,106 @@ function renderTable(container, rows, keyPrefix, eurJpyRate = null, options = {}
     finish: '',
     title: ''
   };
-  const values = {
-    language: uniqueValues(rows, 'language'),
-    expansion: uniqueValues(rows, 'expansion'),
-    finish: uniqueValues(rows, 'finish')
-  };
-
-  container.innerHTML = `
-    <div class="desktop-results">
-      <div class="table-tools">
-        <div class="filters">
-          <label class="filter-control">Max price (¥)<input id="${keyPrefix}-max" type="number" min="0" step="1" placeholder="No limit"></label>
-          ${selectHtml(`${keyPrefix}-language`, 'Language', values.language)}
-          ${selectHtml(`${keyPrefix}-expansion`, 'Expansion', values.expansion)}
-          ${selectHtml(`${keyPrefix}-finish`, 'Finish', values.finish)}
-          <label class="filter-control title-filter">Title contains<input id="${keyPrefix}-title" type="text" placeholder="Search title"></label>
-          <button class="clear-filters" type="button">Clear</button>
-        </div>
-        <span class="table-count"></span>
-      </div>
-      <div class="table-wrap"><table>
-        <thead><tr>
-          <th data-sort="price" data-label="Price" aria-sort="ascending">Price ↑</th>
-          <th data-sort="language" data-label="Language">Language</th>
-          <th data-sort="expansion" data-label="Expansion">Expansion</th>
-          <th data-sort="finish" data-label="Finish">Finish</th>
-          <th data-sort="title" data-label="Full title">Full title</th>
-          <th class="listing-heading">Listing</th>
-          <th class="preview-heading">Preview</th>
-        </tr></thead>
-        <tbody></tbody>
-      </table></div>
-    </div>
-    <div class="mobile-results">
-      <div class="mobile-toolbar">
-        ${mobileSortHtml(`${keyPrefix}`, [['price-asc','Price ↑'],['price-desc','Price ↓'],['language-asc','Language A–Z'],['language-desc','Language Z–A'],['expansion-asc','Expansion A–Z'],['expansion-desc','Expansion Z–A'],['finish-asc','Finish A–Z'],['finish-desc','Finish Z–A'],['title-asc','Title A–Z'],['title-desc','Title Z–A']])}
-        <button class="mobile-filter-toggle" type="button" aria-expanded="false">Filters</button>
-        <span class="table-count"></span>
-      </div>
-      ${mobileFilterPanel(keyPrefix, values)}
-      <div class="mobile-list"></div>
-    </div>`;
-
-  const mobileSort = container.querySelector(`#${keyPrefix}-mobile-sort`);
-  const mobileFilters = container.querySelector(`#${keyPrefix}-mobile-filters`);
-  const mobileFilterButton = container.querySelector('.mobile-filter-toggle');
-
-  function setSort(value) {
-    const [column, direction] = value.split('-');
-    state.sort = column;
-    state.direction = direction;
-  }
-
-  function currentMobileSort() {
-    return `${state.sort}-${state.direction}`;
-  }
 
   function draw() {
     const filtered = sortRows(filterRows(rows, state), state.sort, state.direction);
-    const count = `${filtered.length} / ${rows.length}`;
-    container.querySelectorAll('.table-count').forEach(el => { el.textContent = count; });
-    const body = filtered.length ? filtered.map(row => `<tr>
-      <td class="price">${money(row.price, eurJpyRate)}</td>
-      <td>${escapeHtml(row.language)}</td>
-      <td>${escapeHtml(row.expansion)}</td>
-      <td>${finishText(row)}</td>
-      <td>${escapeHtml(row.title)}</td>
-      <td>${listingButton(row)}</td>
-      <td>${previewButton(row)}</td>
-    </tr>`).join('') : `<tr><td colspan="7" class="no-results">No listings match the current filters.</td></tr>`;
-    container.querySelector('.desktop-results tbody').innerHTML = body;
-
-    const mobileBody = filtered.length
-      ? filtered.map(row => mobileListingCard(row, eurJpyRate)).join('')
-      : '<div class="no-results">No listings match the current filters.</div>';
-    container.querySelector('.mobile-list').innerHTML = mobileBody;
-
     const arrow = key => state.sort === key ? (state.direction === 'asc' ? ' ↑' : ' ↓') : '';
+    const body = filtered.length ? filtered.map(row => `<tr>
+      <td class="price" data-label="Price">${money(row.price)}</td>
+      <td data-label="Language">${escapeHtml(row.language)}</td>
+      <td data-label="Expansion">${escapeHtml(row.expansion)}</td>
+      <td data-label="Finish">${finishText(row)}</td>
+      <td data-label="Full title">${escapeHtml(row.title)}</td>
+      <td data-label="Listing">${listingButton(row)}</td>
+      <td data-label="Preview">${previewButton(row)}</td>
+    </tr>`).join('') : `<tr><td colspan="7" class="no-results">No listings match the current filters.</td></tr>`;
+
+    container.querySelector('.table-count').textContent = `${filtered.length} / ${rows.length}`;
+    container.querySelector('tbody').innerHTML = body;
     for (const th of container.querySelectorAll('th[data-sort]')) {
       th.textContent = th.dataset.label + arrow(th.dataset.sort);
       th.setAttribute('aria-sort', state.sort === th.dataset.sort ? (state.direction === 'asc' ? 'ascending' : 'descending') : 'none');
     }
-    mobileSort.value = currentMobileSort();
   }
 
-  const bind = (selector, key, event = 'change') => {
-    container.querySelector(selector)?.addEventListener(event, e => { state[key] = e.target.value; draw(); });
-  };
-  bind(`#${keyPrefix}-max`, 'maxPrice', 'input');
-  bind(`#${keyPrefix}-language`, 'language');
-  bind(`#${keyPrefix}-expansion`, 'expansion');
-  bind(`#${keyPrefix}-finish`, 'finish');
-  bind(`#${keyPrefix}-title`, 'title', 'input');
-  bind(`#${keyPrefix}-mobile-max`, 'maxPrice', 'input');
-  bind(`#${keyPrefix}-mobile-language`, 'language');
-  bind(`#${keyPrefix}-mobile-expansion`, 'expansion');
-  bind(`#${keyPrefix}-mobile-finish`, 'finish');
-  bind(`#${keyPrefix}-mobile-title`, 'title', 'input');
+  container.innerHTML = `
+    <div class="table-tools">
+      <details class="filter-details">
+        <summary>Filters</summary>
+        <div class="filters">
+        <label class="filter-control">Max price (¥)<input id="${keyPrefix}-max" type="number" min="0" step="1" placeholder="No limit"></label>
+        ${selectHtml(`${keyPrefix}-language`, 'Language', uniqueValues(rows, 'language'))}
+        ${selectHtml(`${keyPrefix}-expansion`, 'Expansion', uniqueValues(rows, 'expansion'))}
+        ${selectHtml(`${keyPrefix}-finish`, 'Finish', uniqueValues(rows, 'finish'))}
+        <label class="filter-control title-filter">Title contains<input id="${keyPrefix}-title" type="text" placeholder="Search title"></label>
+        <button class="clear-filters" type="button">Clear</button>
+        </div>
+      </details>
+      <div class="mobile-sort-control">
+        <label>Sort by<select class="mobile-sort-select">
+          <option value="price">Price</option>
+          <option value="language">Language</option>
+          <option value="expansion">Expansion</option>
+          <option value="finish">Finish</option>
+          <option value="title">Full title</option>
+        </select></label>
+        <button class="mobile-sort-direction" type="button" aria-label="Reverse sort order">↑</button>
+      </div>
+      <span class="table-count"></span>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr>
+        <th data-sort="price" data-label="Price" aria-sort="ascending">Price ↑</th>
+        <th data-sort="language" data-label="Language">Language</th>
+        <th data-sort="expansion" data-label="Expansion">Expansion</th>
+        <th data-sort="finish" data-label="Finish">Finish</th>
+        <th data-sort="title" data-label="Full title">Full title</th>
+        <th class="listing-heading">Listing</th>
+        <th class="preview-heading">Preview</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table></div>`;
 
-  const clear = () => {
+  container.querySelector(`#${keyPrefix}-max`).addEventListener('input', e => { state.maxPrice = e.target.value; draw(); });
+  container.querySelector(`#${keyPrefix}-language`).addEventListener('change', e => { state.language = e.target.value; draw(); });
+  container.querySelector(`#${keyPrefix}-expansion`).addEventListener('change', e => { state.expansion = e.target.value; draw(); });
+  container.querySelector(`#${keyPrefix}-finish`).addEventListener('change', e => { state.finish = e.target.value; draw(); });
+  container.querySelector(`#${keyPrefix}-title`).addEventListener('input', e => { state.title = e.target.value; draw(); });
+  container.querySelector('.clear-filters').addEventListener('click', () => {
     Object.assign(state, { maxPrice: '', language: '', expansion: '', finish: '', title: '' });
-    for (const selector of [`#${keyPrefix}-max`, `#${keyPrefix}-mobile-max`]) { const el = container.querySelector(selector); if (el) el.value = ''; }
-    for (const selector of [`#${keyPrefix}-language`, `#${keyPrefix}-mobile-language`, `#${keyPrefix}-expansion`, `#${keyPrefix}-mobile-expansion`, `#${keyPrefix}-finish`, `#${keyPrefix}-mobile-finish`]) {
-      const el = container.querySelector(selector); if (el) el.value = '';
-    }
-    for (const selector of [`#${keyPrefix}-title`, `#${keyPrefix}-mobile-title`]) { const el = container.querySelector(selector); if (el) el.value = ''; }
+    container.querySelector(`#${keyPrefix}-max`).value = '';
+    container.querySelector(`#${keyPrefix}-language`).value = '';
+    container.querySelector(`#${keyPrefix}-expansion`).value = '';
+    container.querySelector(`#${keyPrefix}-finish`).value = '';
+    container.querySelector(`#${keyPrefix}-title`).value = '';
     draw();
-  };
-  container.querySelector('.clear-filters').addEventListener('click', clear);
-  container.querySelector('.mobile-clear').addEventListener('click', clear);
-  mobileFilterButton.addEventListener('click', () => {
-    const open = mobileFilters.hidden;
-    mobileFilters.hidden = !open;
-    mobileFilterButton.setAttribute('aria-expanded', String(open));
   });
-  mobileSort.addEventListener('change', e => { setSort(e.target.value); draw(); });
-
-  container.querySelectorAll('.desktop-results th[data-sort]').forEach(th => th.addEventListener('click', () => {
+  container.querySelectorAll('th[data-sort]').forEach(th => th.addEventListener('click', () => {
     if (state.sort === th.dataset.sort) state.direction = state.direction === 'asc' ? 'desc' : 'asc';
     else { state.sort = th.dataset.sort; state.direction = 'asc'; }
+    const mobileSort = container.querySelector('.mobile-sort-select');
+    if (mobileSort) mobileSort.value = state.sort;
+    const mobileDirection = container.querySelector('.mobile-sort-direction');
+    if (mobileDirection) mobileDirection.textContent = state.direction === 'asc' ? '↑' : '↓';
     draw();
   }));
+  const mobileSort = container.querySelector('.mobile-sort-select');
+  const mobileDirection = container.querySelector('.mobile-sort-direction');
+  if (mobileSort) mobileSort.addEventListener('change', e => {
+    state.sort = e.target.value;
+    state.direction = 'asc';
+    if (mobileDirection) mobileDirection.textContent = '↑';
+    draw();
+  });
+  if (mobileDirection) mobileDirection.addEventListener('click', () => {
+    state.direction = state.direction === 'asc' ? 'desc' : 'asc';
+    mobileDirection.textContent = state.direction === 'asc' ? '↑' : '↓';
+    draw();
+  });
   draw();
 }
 
-function renderCheapest(results, eurJpyRate) {
+function renderCheapest(results) {
   const rows = results.map(r => r.rows[0] ? {
     card: r.card_name,
     price: r.rows[0].price,
@@ -269,50 +192,46 @@ function renderCheapest(results, eurJpyRate) {
   const section = document.createElement('section');
   section.className = 'card-result cheapest-section';
   section.innerHTML = `<h2>Cheapest listing for each card</h2>
-    <div class="desktop-results">
-      <div class="table-tools">
+    <div class="table-tools">
+      <details class="filter-details">
+        <summary>Filters</summary>
         <div class="filters">
-          <label class="filter-control">Max price (¥)<input class="cheap-max" type="number" min="0" step="1" placeholder="No limit"></label>
-          <label class="filter-control">Language<select class="cheap-language"><option value="">All</option></select></label>
-          <label class="filter-control">Expansion<select class="cheap-expansion"><option value="">All</option></select></label>
-          <label class="filter-control">Finish<select class="cheap-finish"><option value="">All</option></select></label>
-          <label class="filter-control title-filter">Title contains<input class="cheap-title" type="text" placeholder="Search card/title"></label>
-          <button class="clear-filters cheap-clear" type="button">Clear</button>
+        <label class="filter-control">Max price (¥)<input class="cheap-max" type="number" min="0" step="1" placeholder="No limit"></label>
+        <label class="filter-control">Language<select class="cheap-language"><option value="">All</option></select></label>
+        <label class="filter-control">Expansion<select class="cheap-expansion"><option value="">All</option></select></label>
+        <label class="filter-control">Finish<select class="cheap-finish"><option value="">All</option></select></label>
+        <label class="filter-control title-filter">Title contains<input class="cheap-title" type="text" placeholder="Search card/title"></label>
+        <button class="clear-filters cheap-clear" type="button">Clear</button>
         </div>
-        <span class="table-count"></span>
+      </details>
+      <div class="mobile-sort-control">
+        <label>Sort by<select class="mobile-sort-select">
+          <option value="card">Card</option>
+          <option value="price">Price</option>
+          <option value="language">Language</option>
+          <option value="expansion">Expansion</option>
+          <option value="finish">Finish</option>
+          <option value="title">Full title</option>
+        </select></label>
+        <button class="mobile-sort-direction" type="button" aria-label="Reverse sort order">↑</button>
       </div>
-      <div class="table-wrap"><table class="cheapest-table"><thead><tr>
-        <th data-sort="card" data-label="Card">Card</th>
-        <th data-sort="price" data-label="Price">Price</th>
-        <th data-sort="language" data-label="Language">Language</th>
-        <th data-sort="expansion" data-label="Expansion">Expansion</th>
-        <th data-sort="finish" data-label="Finish">Finish</th>
-        <th data-sort="title" data-label="Full title">Full title</th>
-        <th class="listing-heading">Listing</th>
-        <th class="preview-heading">Preview</th>
-      </tr></thead><tbody></tbody></table></div>
+      <span class="table-count"></span>
     </div>
-    <div class="mobile-results">
-      <div class="mobile-toolbar">
-        ${mobileSortHtml('cheap', [['input','Input order'],['price-asc','Price ↑'],['price-desc','Price ↓'],['card-asc','Card A–Z'],['card-desc','Card Z–A'],['language-asc','Language A–Z'],['expansion-asc','Expansion A–Z'],['finish-asc','Finish A–Z'],['title-asc','Title A–Z']])}
-        <button class="mobile-filter-toggle" type="button" aria-expanded="false">Filters</button>
-        <span class="table-count"></span>
-      </div>
-      <div class="mobile-filter-panel" hidden>
-        <label class="filter-control">Max price (¥)<input class="cheap-mobile-max" type="number" min="0" step="1" placeholder="No limit"></label>
-        <label class="filter-control">Language<select class="cheap-mobile-language"><option value="">All</option></select></label>
-        <label class="filter-control">Expansion<select class="cheap-mobile-expansion"><option value="">All</option></select></label>
-        <label class="filter-control">Finish<select class="cheap-mobile-finish"><option value="">All</option></select></label>
-        <label class="filter-control title-filter">Title contains<input class="cheap-mobile-title" type="text" placeholder="Search card/title"></label>
-        <button class="clear-filters mobile-clear" type="button">Clear filters</button>
-      </div>
-      <div class="mobile-list"></div>
-    </div>`;
+    <div class="table-wrap"><table class="cheapest-table"><thead><tr>
+      <th data-sort="card" data-label="Card">Card ↑</th>
+      <th data-sort="price" data-label="Price">Price</th>
+      <th data-sort="language" data-label="Language">Language</th>
+      <th data-sort="expansion" data-label="Expansion">Expansion</th>
+      <th data-sort="finish" data-label="Finish">Finish</th>
+      <th data-sort="title" data-label="Full title">Full title</th>
+      <th class="listing-heading">Listing</th>
+      <th class="preview-heading">Preview</th>
+    </tr></thead><tbody></tbody></table></div>`;
   resultsEl.appendChild(section);
 
   const state = { sort: null, direction: 'asc', maxPrice: '', language: '', expansion: '', finish: '', title: '' };
   const values = key => [...new Set(rows.map(r => r[key]).filter(v => v && v !== '-'))].sort((a,b) => String(a).localeCompare(String(b), undefined, {numeric:true, sensitivity:'base'}));
-  for (const [cls, key] of [['cheap-language','language'], ['cheap-expansion','expansion'], ['cheap-finish','finish'], ['cheap-mobile-language','language'], ['cheap-mobile-expansion','expansion'], ['cheap-mobile-finish','finish']]) {
+  for (const [cls, key] of [['cheap-language','language'], ['cheap-expansion','expansion'], ['cheap-finish','finish']]) {
     section.querySelector(`.${cls}`).innerHTML += values(key).map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
   }
 
@@ -323,53 +242,72 @@ function renderCheapest(results, eurJpyRate) {
     (!state.finish || r.finish === state.finish) &&
     (!state.title || r.title.toLowerCase().includes(state.title.toLowerCase()) || r.card.toLowerCase().includes(state.title.toLowerCase()))
   );
-  const sorted = arr => {
-    if (!state.sort || state.sort === 'input') return [...arr];
-    const [key, direction] = state.sort.split('-');
-    const sign = direction === 'desc' ? -1 : 1;
-    return [...arr].sort((a,b) => {
-      if (key === 'price') {
+  const sort = arr => {
+    if (!state.sort) return [...arr];
+    const sign = state.direction === 'desc' ? -1 : 1;
+    return [...arr].sort((a, b) => {
+      if (state.sort === 'price') {
         if (a.price === null) return 1;
         if (b.price === null) return -1;
         return (a.price - b.price) * sign;
       }
-      return String(a[key]).localeCompare(String(b[key]), undefined, {numeric:true, sensitivity:'base'}) * sign;
+      return String(a[state.sort]).localeCompare(String(b[state.sort]), undefined, {numeric:true, sensitivity:'base'}) * sign;
     });
   };
-  const setFilter = (key, selector, event='change') => section.querySelector(selector)?.addEventListener(event, e => { state[key] = e.target.value; draw(); });
 
   function draw() {
-    const visible = sorted(filtered());
-    section.querySelectorAll('.table-count').forEach(el => { el.textContent = `${visible.length} / ${rows.length}`; });
-    section.querySelector('.cheapest-table tbody').innerHTML = visible.map(r => r.price === null ?
+    const visible = sort(filtered());
+    section.querySelector('.table-count').textContent = `${visible.length} / ${rows.length}`;
+    section.querySelector('tbody').innerHTML = visible.map(r => r.price === null ?
       `<tr><td>${escapeHtml(r.card)}</td><td colspan="7">No matching in-stock listing${r.error ? `: ${escapeHtml(r.error)}` : ''}</td></tr>` :
-      `<tr><td>${escapeHtml(r.card)}</td><td class="price">${money(r.price, eurJpyRate)}</td><td>${escapeHtml(r.language)}</td><td>${escapeHtml(r.expansion)}</td><td>${escapeHtml(r.finish)}</td><td>${escapeHtml(r.title)}</td><td>${listingButton(r)}</td><td>${previewButton(r)}</td></tr>`
+      `<tr><td>${escapeHtml(r.card)}</td><td class="price">${money(r.price)}</td><td>${escapeHtml(r.language)}</td><td>${escapeHtml(r.expansion)}</td><td>${escapeHtml(r.finish)}</td><td>${escapeHtml(r.title)}</td><td>${listingButton(r)}</td><td>${previewButton(r)}</td></tr>`
     ).join('');
-    section.querySelector('.mobile-list').innerHTML = visible.map(r => r.price === null
-      ? `<article class="mobile-listing-card"><div class="mobile-card-heading">${escapeHtml(r.card)}</div><div class="mobile-card-title">No matching in-stock listing${r.error ? `: ${escapeHtml(r.error)}` : ''}</div></article>`
-      : mobileListingCard(r, eurJpyRate, r.card)
-    ).join('') || '<div class="no-results">No listings match the current filters.</div>';
-    const mobileSort = section.querySelector('.mobile-toolbar select');
-    mobileSort.value = state.sort ? state.sort : 'input';
     for (const th of section.querySelectorAll('th[data-sort]')) {
-      const key = th.dataset.sort;
-      const active = state.sort && state.sort.startsWith(key);
-      const direction = active ? (state.sort.endsWith('-desc') ? ' ↓' : ' ↑') : '';
-      th.textContent = th.dataset.label + direction;
+      const active = state.sort === th.dataset.sort;
+      th.textContent = th.dataset.label + (active ? (state.direction === 'asc' ? ' ↑' : ' ↓') : '');
     }
   }
 
-  setFilter('maxPrice', '.cheap-max', 'input'); setFilter('language', '.cheap-language'); setFilter('expansion', '.cheap-expansion'); setFilter('finish', '.cheap-finish'); setFilter('title', '.cheap-title', 'input');
-  setFilter('maxPrice', '.cheap-mobile-max', 'input'); setFilter('language', '.cheap-mobile-language'); setFilter('expansion', '.cheap-mobile-expansion'); setFilter('finish', '.cheap-mobile-finish'); setFilter('title', '.cheap-mobile-title', 'input');
-  section.querySelector('.clear-filters').addEventListener('click', () => { Object.assign(state,{maxPrice:'',language:'',expansion:'',finish:'',title:''}); section.querySelector('.cheap-max').value=''; section.querySelector('.cheap-language').value=''; section.querySelector('.cheap-expansion').value=''; section.querySelector('.cheap-finish').value=''; section.querySelector('.cheap-title').value=''; section.querySelector('.cheap-mobile-max').value=''; section.querySelector('.cheap-mobile-language').value=''; section.querySelector('.cheap-mobile-expansion').value=''; section.querySelector('.cheap-mobile-finish').value=''; section.querySelector('.cheap-mobile-title').value=''; draw(); });
-  section.querySelector('.mobile-clear').addEventListener('click', () => section.querySelector('.clear-filters').click());
-  section.querySelector('.mobile-filter-toggle').addEventListener('click', e => { const panel=section.querySelector('.mobile-filter-panel'); const open=panel.hidden; panel.hidden=!open; e.currentTarget.setAttribute('aria-expanded', String(open)); });
-  section.querySelector('.mobile-toolbar select').addEventListener('change', e => { state.sort = e.target.value === 'input' ? null : e.target.value; state.direction = state.sort?.endsWith('-desc') ? 'desc' : 'asc'; draw(); });
-  section.querySelectorAll('.cheapest-table th[data-sort]').forEach(th => th.addEventListener('click', () => { const key=th.dataset.sort; if (state.sort?.startsWith(key)) state.sort = `${key}-${state.sort.endsWith('-asc') ? 'desc' : 'asc'}`; else state.sort=`${key}-asc`; draw(); }));
+  section.querySelector('.cheap-max').addEventListener('input', e => { state.maxPrice = e.target.value; draw(); });
+  section.querySelector('.cheap-language').addEventListener('change', e => { state.language = e.target.value; draw(); });
+  section.querySelector('.cheap-expansion').addEventListener('change', e => { state.expansion = e.target.value; draw(); });
+  section.querySelector('.cheap-finish').addEventListener('change', e => { state.finish = e.target.value; draw(); });
+  section.querySelector('.cheap-title').addEventListener('input', e => { state.title = e.target.value; draw(); });
+  section.querySelector('.cheap-clear').addEventListener('click', () => {
+    Object.assign(state, {maxPrice:'', language:'', expansion:'', finish:'', title:''});
+    section.querySelector('.cheap-max').value = '';
+    section.querySelector('.cheap-language').value = '';
+    section.querySelector('.cheap-expansion').value = '';
+    section.querySelector('.cheap-finish').value = '';
+    section.querySelector('.cheap-title').value = '';
+    draw();
+  });
+  section.querySelectorAll('th[data-sort]').forEach(th => th.addEventListener('click', () => {
+    if (state.sort === th.dataset.sort) state.direction = state.direction === 'asc' ? 'desc' : 'asc';
+    else { state.sort = th.dataset.sort; state.direction = 'asc'; }
+    const mobileSort = section.querySelector('.mobile-sort-select');
+    if (mobileSort) mobileSort.value = state.sort;
+    const mobileDirection = section.querySelector('.mobile-sort-direction');
+    if (mobileDirection) mobileDirection.textContent = state.direction === 'asc' ? '↑' : '↓';
+    draw();
+  }));
+  const mobileSort = section.querySelector('.mobile-sort-select');
+  const mobileDirection = section.querySelector('.mobile-sort-direction');
+  if (mobileSort) mobileSort.addEventListener('change', e => {
+    state.sort = e.target.value;
+    state.direction = 'asc';
+    if (mobileDirection) mobileDirection.textContent = '↑';
+    draw();
+  });
+  if (mobileDirection) mobileDirection.addEventListener('click', () => {
+    state.direction = state.direction === 'asc' ? 'desc' : 'asc';
+    mobileDirection.textContent = state.direction === 'asc' ? '↑' : '↓';
+    draw();
+  });
   draw();
 }
 
-function renderIndividuals(results, eurJpyRate) {
+function renderIndividuals(results) {
   const section = document.createElement('section');
   section.className = 'card-result individual-section';
   section.innerHTML = `<h2>All results</h2><div class="tabbar" role="tablist"></div><div class="tab-panels"></div>`;
@@ -391,7 +329,7 @@ function renderIndividuals(results, eurJpyRate) {
     panel.setAttribute('role', 'tabpanel');
     panel.setAttribute('aria-labelledby', tab.id);
     if (r.error) panel.innerHTML = `<div class="error">${escapeHtml(r.error)}</div>`;
-    else renderTable(panel, r.rows, `card-${index}`, eurJpyRate);
+    else renderTable(panel, r.rows, `card-${index}`);
 
     tab.addEventListener('click', () => {
       section.querySelectorAll('.tab').forEach(t => {
@@ -412,18 +350,22 @@ function renderIndividuals(results, eurJpyRate) {
   resultsEl.appendChild(section);
 }
 
-function render(results, output, eurJpyRate) {
+function render(results, output) {
   resultsEl.classList.remove('hidden');
   resultsEl.innerHTML = '';
-  if (output === 'cheapest' || output === 'both') renderCheapest(results, eurJpyRate);
-  if (output === 'individual' || output === 'both') renderIndividuals(results, eurJpyRate);
-  requestAnimationFrame(() => viewMode === 'desktop' ? fitResultSections() : setViewMode('mobile'));
+  if (output === 'cheapest' || output === 'both') renderCheapest(results);
+  if (output === 'individual' || output === 'both') renderIndividuals(results);
+  requestAnimationFrame(() => { syncMobileFilters(); fitResultSections(); });
 }
 
 function fitResultSections() {
-  if (viewMode === 'mobile') return;
   const sections = [...resultsEl.querySelectorAll('.card-result')];
   if (!sections.length) return;
+  if (window.matchMedia('(max-width: 700px)').matches) {
+    const width = Math.max(280, window.innerWidth - 20);
+    for (const section of sections) section.style.width = `${width}px`;
+    return;
+  }
   const maxViewportWidth = Math.max(320, window.innerWidth - 32);
   let requiredWidth = 0;
   for (const section of sections) {
@@ -495,7 +437,7 @@ async function start() {
   if (pollTimer) clearTimeout(pollTimer);
   const cards = parseCards(cardsEl.value);
   if (!cards.length) { statusEl.textContent = 'Enter at least one card.'; return; }
-  if (cards.length > 110) { statusEl.textContent = 'Maximum 110 cards per job.'; return; }
+  if (cards.length > 100) { statusEl.textContent = 'Maximum 100 cards per job.'; return; }
 
   checkEl.disabled = true;
   resultsEl.classList.add('hidden');
@@ -529,7 +471,7 @@ async function poll(jobId) {
     if (job.status === 'complete') updateTiming(job.completed, job.total, true);
     else updateTiming(job.completed, job.total);
     if (job.status === 'complete') {
-      render(job.results, job.output, job.eur_jpy_rate);
+      render(job.results, job.output);
       stopTimer();
       checkEl.disabled = false;
       return;
@@ -544,8 +486,6 @@ async function poll(jobId) {
 }
 
 checkEl.addEventListener('click', start);
-viewToggleEl.addEventListener('click', () => setViewMode(viewMode === 'mobile' ? 'desktop' : 'mobile'));
-setViewMode(isMobileDevice() ? 'mobile' : 'desktop');
 
 
 let previewOverlay = null;
@@ -593,6 +533,7 @@ function positionPreview(button) {
   overlay.style.top = `${Math.round(top)}px`;
 }
 
+
 function showPreview(button) {
   if (previewHideTimer) clearTimeout(previewHideTimer);
   const overlay = ensurePreviewOverlay();
@@ -616,44 +557,63 @@ function showPreview(button) {
   positionPreview(button);
 }
 
+function isMobileViewport() {
+  return window.matchMedia('(max-width: 700px)').matches;
+}
+
+function syncMobileFilters() {
+  const mobile = isMobileViewport();
+  document.querySelectorAll('.filter-details').forEach(details => {
+    if (mobile) details.removeAttribute('open');
+    else details.setAttribute('open', '');
+  });
+}
+
+function toggleMobilePreview(button) {
+  const overlay = ensurePreviewOverlay();
+  const isSame = overlay.dataset.previewButtonId === button.dataset.previewId;
+  if (isSame && !overlay.hidden) {
+    hidePreview();
+    return;
+  }
+  const previewId = button.dataset.previewId || `preview-${Math.random().toString(36).slice(2)}`;
+  button.dataset.previewId = previewId;
+  overlay.dataset.previewButtonId = previewId;
+  showPreview(button);
+}
+
 document.addEventListener('mouseover', event => {
-  if (viewMode !== 'desktop') return;
+  if (isMobileViewport()) return;
   const button = event.target.closest('.preview-button');
   if (button) showPreview(button);
 });
 document.addEventListener('mouseout', event => {
-  if (viewMode !== 'desktop') return;
   const button = event.target.closest('.preview-button');
   if (!button || button.contains(event.relatedTarget)) return;
   previewHideTimer = setTimeout(hidePreview, 80);
 });
-
-document.addEventListener('click', event => {
-  const button = event.target.closest('.preview-button');
-  if (button && viewMode === 'mobile') {
-    event.preventDefault();
-    if (previewOverlay && !previewOverlay.hidden) {
-      hidePreview();
-    } else {
-      showPreview(button);
-    }
-    return;
-  }
-  if (viewMode === 'mobile' && previewOverlay && !previewOverlay.hidden) {
-    hidePreview();
-  }
-});
-
 document.addEventListener('focusin', event => {
   const button = event.target.closest('.preview-button');
-  if (button) showPreview(button);
+  if (button && !isMobileViewport()) showPreview(button);
 });
 document.addEventListener('focusout', event => {
-  if (viewMode === 'desktop' && event.target.closest('.preview-button')) {
-    previewHideTimer = setTimeout(hidePreview, 80);
-  }
+  if (event.target.closest('.preview-button') && !isMobileViewport()) previewHideTimer = setTimeout(hidePreview, 80);
 });
+document.addEventListener('click', event => {
+  const button = event.target.closest('.preview-button');
+  if (button && isMobileViewport()) {
+    toggleMobilePreview(button);
+    return;
+  }
+  if (isMobileViewport() && previewOverlay && !previewOverlay.hidden) hidePreview();
+});
+
 window.addEventListener('scroll', hidePreview, true);
 window.addEventListener('resize', hidePreview);
 
-window.addEventListener('resize', () => { if (!resultsEl.classList.contains('hidden')) fitResultSections(); });
+window.addEventListener('resize', () => {
+  syncMobileFilters();
+  if (!resultsEl.classList.contains('hidden')) fitResultSections();
+});
+
+syncMobileFilters();

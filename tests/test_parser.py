@@ -68,34 +68,3 @@ def test_art_card_is_skipped():
     """
     rows, _ = parse_page(html)
     assert rows == []
-
-
-def test_card_name_matching_does_not_match_longer_card_names():
-    from app.hareruya import contains_card
-
-    assert contains_card("Tithe 【EN】 [WTH]", "Tithe")
-    assert contains_card("Tithe - Borderless 【EN】 [ABC]", "Tithe")
-    assert not contains_card("Blood Tithe 【EN】 [ABC]", "Tithe")
-
-
-def test_retrof_counts_as_foil():
-    html = """
-    <div class="result_pagenum">Page 1 / 1</div>
-    <div class="itemData">
-      <a class="itemName">Tithe RetroF 【EN】 [WTH]</a>
-      <div class="itemDetail__price">¥1,000</div>
-      <div class="itemDetail__stock">NM Stock: 1</div>
-    </div>
-    """
-    rows, _ = parse_page(html)
-    assert rows[0].foil is True
-
-
-def test_current_hareruya_title_matching():
-    from app.hareruya import contains_card
-
-    assert contains_card("《Tithe》[VIS]", "Tithe")
-    assert contains_card("〖Foil〗《Tithe》[VIS]", "Tithe")
-    assert contains_card("〖Gold Frame〗《Tithe》[WC98] Brian Hacker", "Tithe")
-    assert not contains_card("《Blood Tithe》[M11]", "Tithe")
-    assert not contains_card("《Mana Tithe》[PLC]", "Tithe")

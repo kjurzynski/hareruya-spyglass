@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Literal
-
 from pydantic import BaseModel, Field
 
 Finish = Literal["foil", "nonfoil", "all"]
@@ -9,7 +8,7 @@ OutputMode = Literal["individual", "cheapest", "both"]
 
 
 class CheckRequest(BaseModel):
-    cards: list[str] = Field(min_length=1, max_length=110)
+    cards: list[str] = Field(min_length=1, max_length=100)
     finish: Finish = "all"
     output: OutputMode = "cheapest"
 
@@ -29,6 +28,7 @@ class CardResultOut(BaseModel):
     card_name: str
     rows: list[ListingOut]
     error: str | None = None
+    output: OutputMode = "cheapest"
 
 
 class JobCreated(BaseModel):
@@ -40,7 +40,6 @@ class JobStatus(BaseModel):
     status: Literal["queued", "running", "complete", "error"]
     completed: int
     total: int
-    results: list[CardResultOut] = Field(default_factory=list)
+    results: list[CardResultOut] = []
     error: str | None = None
     output: OutputMode = "cheapest"
-    eur_jpy_rate: float | None = None

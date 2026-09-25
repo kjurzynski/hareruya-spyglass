@@ -8,14 +8,13 @@
 </head>
 <body>
   <main class="shell">
-    <header class="site-header">
+    <header>
       <h1>Hareruya Spyglass</h1>
-      <button id="viewToggle" class="view-toggle" type="button" aria-pressed="false">Switch to Mobile view</button>
     </header>
 
     <section class="panel form-panel">
       <label for="cards">Card list</label>
-      <p class="hint">Use the Moxfield plain text export format. Leading quantities such as <code>4</code> are ignored. Popular cards with many variants such as Lightning Bolt or Counterspell as well as looking up a full deck at once may cause the script to run for an extended period, but usually no more than a few minutes.</p>
+      <p class="hint">Use the Moxfield plain text format. Leading quantities such as <code>4</code> are ignored. Popular cards with many variants such as Sol Ring may cause the script to run for an extended period. 100 cards is the maximum amount allowed.</p>
       <textarea id="cards" spellcheck="false" placeholder="4 Lightning Bolt&#10;2 Counterspell&#10;1 Black Lotus"></textarea>
 
       <div class="options">

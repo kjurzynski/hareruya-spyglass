@@ -5,7 +5,6 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 
-from .currency import get_eur_jpy_rate
 from .hareruya import CardResult, run_cards
 
 
@@ -19,7 +18,6 @@ class Job:
     completed: int = 0
     results: list[CardResult] = field(default_factory=list)
     error: str | None = None
-    eur_jpy_rate: float | None = None
 
 
 class JobManager:
@@ -45,15 +43,6 @@ class JobManager:
                 job.completed = completed
 
         try:
-            try:
-                eur_jpy_rate = float(get_eur_jpy_rate())
-            except Exception:
-                # Price scraping remains usable if the independent FX service is unavailable.
-                eur_jpy_rate = None
-
-            with self._lock:
-                job.eur_jpy_rate = eur_jpy_rate
-
             results = run_cards(job.cards, job.finish, progress=progress)
             with self._lock:
                 job.results = results
@@ -79,5 +68,4 @@ class JobManager:
                 completed=job.completed,
                 results=list(job.results),
                 error=job.error,
-                eur_jpy_rate=job.eur_jpy_rate,
             )

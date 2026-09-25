@@ -51,31 +51,9 @@ def clean(text: str) -> str:
     return " ".join(text.split())
 
 
-NAME_BLOCK_RE = re.compile(r"《([^》]+)》")
-
-
-NAME_BLOCK_RE = re.compile(r"《([^》]+)》")
-
-
 def contains_card(title: str, card_name: str) -> bool:
-    """Match a card name exactly inside Hareruya's 《...》 title block."""
     normalize = lambda value: clean(unicodedata.normalize("NFKC", value)).casefold()
-    wanted = normalize(card_name)
-    haystack = normalize(title)
-
-    for name_block in NAME_BLOCK_RE.findall(haystack):
-        names = [clean(part) for part in re.split(r"[/／]", name_block)]
-        if wanted in names:
-            return True
-
-    escaped = re.escape(wanted)
-    return bool(
-        re.match(
-            rf"^{escaped}(?:$|\s+[【〖《\[]|\s+(?:foil|retrof)\b|\s+[-–—:(])",
-            haystack,
-            re.IGNORECASE,
-        )
-    )
+    return normalize(card_name) in normalize(title)
 
 
 def search_url(card_name: str) -> str:
@@ -309,7 +287,7 @@ def parse_page(html: str) -> tuple[list[Listing], int]:
                 price=price,
                 language=language_match.group(1).upper() if language_match else "Unknown",
                 expansion=expansion_match.group(1).strip() if expansion_match else "Unknown",
-                foil=bool(re.search(r"\bfoil\b", title, re.I) or "retrof" in title.casefold()),
+                foil=bool(re.search(r"\bfoil\b", title, re.I)),
                 title=title,
                 stock=extract_stock(item),
                 url=listing_url,

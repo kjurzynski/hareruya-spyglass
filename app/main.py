@@ -10,7 +10,7 @@ from .jobs import JobManager
 from .models import CardResultOut, CheckRequest, JobCreated, JobStatus, ListingOut
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-app = FastAPI(title="Hareruya Spyglass", version="1.0.0")
+app = FastAPI(title="Hareruya MTG Price Checker", version="1.0.0")
 manager = JobManager(max_jobs=2)
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
@@ -37,8 +37,8 @@ def create_job(request: CheckRequest):
             seen.add(card.casefold())
     if not cards:
         raise HTTPException(status_code=400, detail="No card names were supplied.")
-    if len(cards) > 110:
-        raise HTTPException(status_code=400, detail="Maximum 110 cards per job.")
+    if len(cards) > 100:
+        raise HTTPException(status_code=400, detail="Maximum 100 cards per job.")
     job = manager.create(cards, request.finish, request.output)
     return JobCreated(job_id=job.job_id)
 
@@ -78,5 +78,4 @@ def get_job(job_id: str):
         results=results,
         error=job.error,
         output=job.output,
-        eur_jpy_rate=job.eur_jpy_rate,
     )
