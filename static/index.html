@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hareruya Spyglass</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <h1>Hareruya Spyglass</h1>
+    </header>
+
+    <section class="panel form-panel">
+      <label for="cards">Card list</label>
+      <p class="hint">Use the Moxfield plain text export format. Leading quantities such as <code>4</code> are ignored. Popular cards with many variants such as Lightning Bolt or Counterspell as well as looking up a full deck at once may cause the script to run for an extended period, but usually no more than a few minutes.</p>
+      <textarea id="cards" spellcheck="false" placeholder="4 Lightning Bolt&#10;2 Counterspell&#10;1 Black Lotus"></textarea>
+
+      <div class="options">
+        <div>
+          <label for="finish">Foil / Non-Foil</label>
+          <select id="finish">
+            <option value="all">All</option>
+            <option value="foil">Foil</option>
+            <option value="nonfoil">Non-foil</option>
+          </select>
+        </div>
+        <div>
+          <label>Output</label>
+          <div class="output-checks" id="outputChecks">
+            <label class="check-option"><input type="radio" name="output" id="outputCheapest" value="cheapest" checked> Cheapest (one option per card)</label>
+            <label class="check-option"><input type="radio" name="output" id="outputAll" value="individual"> Individual (all listings for each card)</label>
+            <label class="check-option"><input type="radio" name="output" id="outputBoth" value="both"> Both</label>
+          </div>
+        </div>
+      </div>
+
+      <button id="check">Check prices</button>
+      <div id="status" class="status">Ready.</div>
+      <div class="progress-track"><div id="progress" class="progress"></div></div>
+    </section>
+
+    <section id="results" class="results hidden"></section>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>
