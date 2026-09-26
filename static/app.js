@@ -70,6 +70,34 @@ function previewButton(row) {
   return `<span class="preview-button" tabindex="0" data-image-url="${image}" data-image-title="${title}" aria-label="Preview card image">Preview</span>`;
 }
 
+function mobileCardMarkup(row, cardName = '', eurJpyRate = null) {
+  const name = escapeHtml(cardName || row.title || 'Card');
+  const title = escapeHtml(row.title || cardName || 'Card');
+  const image = row.image_url
+    ? `<img class="mobile-card-image" src="${escapeHtml(row.image_url)}" alt="" loading="lazy" decoding="async">`
+    : '<div class="mobile-card-image mobile-card-image-empty" aria-hidden="true">No image</div>';
+  const finish = finishText(row);
+  const finishClass = row.foil ? ' foil' : ' nonfoil';
+  const card = `<div class="mobile-listing-card">
+      <div class="mobile-card-media">${image}</div>
+      <div class="mobile-card-info">
+        <div class="mobile-card-name" title="${title}">${name}</div>
+        <div class="mobile-card-price price">${money(row.price, eurJpyRate)}</div>
+        <div class="mobile-card-badges">
+          <span class="mobile-badge badge-language">${escapeHtml(row.language)}</span>
+          <span class="mobile-badge badge-expansion">${escapeHtml(row.expansion)}</span>
+          <span class="mobile-badge badge-finish${finishClass}">${finish}</span>
+        </div>
+      </div>
+      ${row.url ? '<span class="mobile-card-chevron" aria-hidden="true">›</span>' : ''}
+    </div>`;
+  const content = row.url
+    ? `<a class="mobile-listing-link" href="${escapeHtml(row.url)}" target="_blank" rel="noopener noreferrer" aria-label="View listing for ${name}">${card}</a>`
+    : `<div class="mobile-listing-link mobile-listing-link-unavailable">${card}</div>`;
+
+  return `<td class="mobile-result" colspan="7">${content}</td>`;
+}
+
 function renderTable(container, rows, keyPrefix, eurJpyRate = null, options = {}) {
   const state = {
     sort: 'price',
@@ -84,7 +112,7 @@ function renderTable(container, rows, keyPrefix, eurJpyRate = null, options = {}
   function draw() {
     const filtered = sortRows(filterRows(rows, state), state.sort, state.direction);
     const arrow = key => state.sort === key ? (state.direction === 'asc' ? ' ↑' : ' ↓') : '';
-    const body = filtered.length ? filtered.map(row => `<tr>
+    const body = filtered.length ? filtered.map(row => `<tr class="listing-row">
       <td class="price" data-label="Price">${money(row.price, eurJpyRate)}</td>
       <td data-label="Language">${escapeHtml(row.language)}</td>
       <td data-label="Expansion">${escapeHtml(row.expansion)}</td>
@@ -92,6 +120,7 @@ function renderTable(container, rows, keyPrefix, eurJpyRate = null, options = {}
       <td data-label="Full title">${escapeHtml(row.title)}</td>
       <td data-label="Listing">${listingButton(row)}</td>
       <td data-label="Preview">${previewButton(row)}</td>
+      ${mobileCardMarkup(row, options.cardName || '', eurJpyRate)}
     </tr>`).join('') : `<tr><td colspan="7" class="no-results">No listings match the current filters.</td></tr>`;
 
     container.querySelector('.table-count').textContent = `${filtered.length} / ${rows.length}`;
@@ -265,7 +294,7 @@ function renderCheapest(results, eurJpyRate = null) {
     section.querySelector('.table-count').textContent = `${visible.length} / ${rows.length}`;
     section.querySelector('tbody').innerHTML = visible.map(r => r.price === null ?
       `<tr><td data-label="Card">${escapeHtml(r.card)}</td><td colspan="7" class="no-results">No matching in-stock listing${r.error ? `: ${escapeHtml(r.error)}` : ''}</td></tr>` :
-      `<tr><td data-label="Card">${escapeHtml(r.card)}</td><td class="price" data-label="Price">${money(r.price, eurJpyRate)}</td><td data-label="Language">${escapeHtml(r.language)}</td><td data-label="Expansion">${escapeHtml(r.expansion)}</td><td data-label="Finish">${escapeHtml(r.finish)}</td><td data-label="Full title">${escapeHtml(r.title)}</td><td data-label="Listing">${listingButton(r)}</td><td data-label="Preview">${previewButton(r)}</td></tr>`
+      `<tr class="listing-row"><td data-label="Card">${escapeHtml(r.card)}</td><td class="price" data-label="Price">${money(r.price, eurJpyRate)}</td><td data-label="Language">${escapeHtml(r.language)}</td><td data-label="Expansion">${escapeHtml(r.expansion)}</td><td data-label="Finish">${escapeHtml(r.finish)}</td><td data-label="Full title">${escapeHtml(r.title)}</td><td data-label="Listing">${listingButton(r)}</td><td data-label="Preview">${previewButton(r)}</td>${mobileCardMarkup(r, r.card, eurJpyRate)}</tr>`
     ).join('');
     for (const th of section.querySelectorAll('th[data-sort]')) {
       const active = state.sort === th.dataset.sort;
@@ -334,7 +363,7 @@ function renderIndividuals(results, eurJpyRate = null) {
     panel.setAttribute('role', 'tabpanel');
     panel.setAttribute('aria-labelledby', tab.id);
     if (r.error) panel.innerHTML = `<div class="error">${escapeHtml(r.error)}</div>`;
-    else renderTable(panel, r.rows, `card-${index}`, eurJpyRate);
+    else renderTable(panel, r.rows, `card-${index}`, eurJpyRate, { cardName: r.card_name });
 
     tab.addEventListener('click', () => {
       section.querySelectorAll('.tab').forEach(t => {
