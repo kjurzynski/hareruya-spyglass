@@ -43,3 +43,4 @@ class JobStatus(BaseModel):
     results: list[CardResultOut] = []
     error: str | None = None
     output: OutputMode = "cheapest"
+    eur_jpy_rate: float | None = None

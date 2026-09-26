@@ -51,9 +51,24 @@ def clean(text: str) -> str:
     return " ".join(text.split())
 
 
+NAME_BLOCK_RE = re.compile(r"《([^》]+)》")
+
+
 def contains_card(title: str, card_name: str) -> bool:
     normalize = lambda value: clean(unicodedata.normalize("NFKC", value)).casefold()
-    return normalize(card_name) in normalize(title)
+    wanted = normalize(card_name)
+    title_normalized = normalize(title)
+
+    name_blocks = NAME_BLOCK_RE.findall(title)
+    if name_blocks:
+        for block in name_blocks:
+            for name in re.split(r"[/／]", block):
+                if normalize(name) == wanted:
+                    return True
+        return False
+
+    # Conservative fallback for older/plain test markup without 《…》 blocks.
+    return bool(re.match(rf"^{re.escape(wanted)}(?=$|[\s【〖\[(])", title_normalized))
 
 
 def search_url(card_name: str) -> str:
@@ -287,7 +302,7 @@ def parse_page(html: str) -> tuple[list[Listing], int]:
                 price=price,
                 language=language_match.group(1).upper() if language_match else "Unknown",
                 expansion=expansion_match.group(1).strip() if expansion_match else "Unknown",
-                foil=bool(re.search(r"\bfoil\b", title, re.I)),
+                foil=bool(re.search(r"\bfoil\b", title, re.I) or "retrof" in title.casefold()),
                 title=title,
                 stock=extract_stock(item),
                 url=listing_url,

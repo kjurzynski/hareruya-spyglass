@@ -18,7 +18,12 @@ function parseCards(text) {
     .filter(Boolean);
 }
 
-function money(value) { return `¥${Number(value).toLocaleString('en-US')}`; }
+function money(value, eurJpyRate = null) {
+  const yen = `¥${Number(value).toLocaleString('en-US')}`;
+  if (!Number.isFinite(Number(eurJpyRate)) || Number(eurJpyRate) <= 0) return yen;
+  const eur = Number(value) / Number(eurJpyRate);
+  return `${yen} <span class="eur-price">(€ ${eur.toFixed(2)})</span>`;
+}
 function escapeHtml(s) {
   return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 }
@@ -65,7 +70,7 @@ function previewButton(row) {
   return `<span class="preview-button" tabindex="0" data-image-url="${image}" data-image-title="${title}" aria-label="Preview card image">Preview</span>`;
 }
 
-function renderTable(container, rows, keyPrefix, options = {}) {
+function renderTable(container, rows, keyPrefix, eurJpyRate = null, options = {}) {
   const state = {
     sort: 'price',
     direction: 'asc',
@@ -80,7 +85,7 @@ function renderTable(container, rows, keyPrefix, options = {}) {
     const filtered = sortRows(filterRows(rows, state), state.sort, state.direction);
     const arrow = key => state.sort === key ? (state.direction === 'asc' ? ' ↑' : ' ↓') : '';
     const body = filtered.length ? filtered.map(row => `<tr>
-      <td class="price" data-label="Price">${money(row.price)}</td>
+      <td class="price" data-label="Price">${money(row.price, eurJpyRate)}</td>
       <td data-label="Language">${escapeHtml(row.language)}</td>
       <td data-label="Expansion">${escapeHtml(row.expansion)}</td>
       <td data-label="Finish">${finishText(row)}</td>
@@ -174,7 +179,7 @@ function renderTable(container, rows, keyPrefix, options = {}) {
   draw();
 }
 
-function renderCheapest(results) {
+function renderCheapest(results, eurJpyRate = null) {
   const rows = results.map(r => r.rows[0] ? {
     card: r.card_name,
     price: r.rows[0].price,
@@ -259,8 +264,8 @@ function renderCheapest(results) {
     const visible = sort(filtered());
     section.querySelector('.table-count').textContent = `${visible.length} / ${rows.length}`;
     section.querySelector('tbody').innerHTML = visible.map(r => r.price === null ?
-      `<tr><td>${escapeHtml(r.card)}</td><td colspan="7">No matching in-stock listing${r.error ? `: ${escapeHtml(r.error)}` : ''}</td></tr>` :
-      `<tr><td>${escapeHtml(r.card)}</td><td class="price">${money(r.price)}</td><td>${escapeHtml(r.language)}</td><td>${escapeHtml(r.expansion)}</td><td>${escapeHtml(r.finish)}</td><td>${escapeHtml(r.title)}</td><td>${listingButton(r)}</td><td>${previewButton(r)}</td></tr>`
+      `<tr><td data-label="Card">${escapeHtml(r.card)}</td><td colspan="7" class="no-results">No matching in-stock listing${r.error ? `: ${escapeHtml(r.error)}` : ''}</td></tr>` :
+      `<tr><td data-label="Card">${escapeHtml(r.card)}</td><td class="price" data-label="Price">${money(r.price, eurJpyRate)}</td><td data-label="Language">${escapeHtml(r.language)}</td><td data-label="Expansion">${escapeHtml(r.expansion)}</td><td data-label="Finish">${escapeHtml(r.finish)}</td><td data-label="Full title">${escapeHtml(r.title)}</td><td data-label="Listing">${listingButton(r)}</td><td data-label="Preview">${previewButton(r)}</td></tr>`
     ).join('');
     for (const th of section.querySelectorAll('th[data-sort]')) {
       const active = state.sort === th.dataset.sort;
@@ -307,7 +312,7 @@ function renderCheapest(results) {
   draw();
 }
 
-function renderIndividuals(results) {
+function renderIndividuals(results, eurJpyRate = null) {
   const section = document.createElement('section');
   section.className = 'card-result individual-section';
   section.innerHTML = `<h2>All results</h2><div class="tabbar" role="tablist"></div><div class="tab-panels"></div>`;
@@ -329,7 +334,7 @@ function renderIndividuals(results) {
     panel.setAttribute('role', 'tabpanel');
     panel.setAttribute('aria-labelledby', tab.id);
     if (r.error) panel.innerHTML = `<div class="error">${escapeHtml(r.error)}</div>`;
-    else renderTable(panel, r.rows, `card-${index}`);
+    else renderTable(panel, r.rows, `card-${index}`, eurJpyRate);
 
     tab.addEventListener('click', () => {
       section.querySelectorAll('.tab').forEach(t => {
@@ -350,11 +355,11 @@ function renderIndividuals(results) {
   resultsEl.appendChild(section);
 }
 
-function render(results, output) {
+function render(results, output, eurJpyRate = null) {
   resultsEl.classList.remove('hidden');
   resultsEl.innerHTML = '';
-  if (output === 'cheapest' || output === 'both') renderCheapest(results);
-  if (output === 'individual' || output === 'both') renderIndividuals(results);
+  if (output === 'cheapest' || output === 'both') renderCheapest(results, eurJpyRate);
+  if (output === 'individual' || output === 'both') renderIndividuals(results, eurJpyRate);
   requestAnimationFrame(() => { syncMobileFilters(); fitResultSections(); });
 }
 
@@ -362,7 +367,7 @@ function fitResultSections() {
   const sections = [...resultsEl.querySelectorAll('.card-result')];
   if (!sections.length) return;
   if (window.matchMedia('(max-width: 700px)').matches) {
-    const width = Math.max(280, window.innerWidth - 20);
+    const width = Math.max(260, window.innerWidth - 20);
     for (const section of sections) section.style.width = `${width}px`;
     return;
   }
@@ -471,7 +476,7 @@ async function poll(jobId) {
     if (job.status === 'complete') updateTiming(job.completed, job.total, true);
     else updateTiming(job.completed, job.total);
     if (job.status === 'complete') {
-      render(job.results, job.output);
+      render(job.results, job.output, job.eur_jpy_rate);
       stopTimer();
       checkEl.disabled = false;
       return;

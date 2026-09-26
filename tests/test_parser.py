@@ -1,4 +1,4 @@
-from app.hareruya import parse_page, select_rows
+from app.hareruya import contains_card, parse_page, select_rows
 
 
 def test_parse_and_filter():
@@ -68,3 +68,27 @@ def test_art_card_is_skipped():
     """
     rows, _ = parse_page(html)
     assert rows == []
+
+
+
+def test_short_card_name_does_not_match_longer_name():
+    assert contains_card('《Tithe》〖EN〗 [VIS]', 'Tithe')
+    assert not contains_card('《Blood Tithe》〖EN〗 [VIS]', 'Tithe')
+    assert not contains_card('《Mana Tithe》〖EN〗 [VIS]', 'Tithe')
+
+
+def test_multilingual_name_block_matches_requested_name():
+    assert contains_card('《税収/Tithe》〖EN〗 [VIS]', 'Tithe')
+
+
+def test_retrof_anywhere_marks_foil():
+    html = """
+    <div class="result_pagenum">Page 1 / 1</div>
+    <div class="itemData">
+      <a class="itemName">《Lightning Bolt》 RetroF alt text 【EN】 [LEA]</a>
+      <div class="itemDetail__price">¥1,500</div>
+      <div class="itemDetail__stock">NM Stock: 1</div>
+    </div>
+    """
+    rows, _ = parse_page(html)
+    assert rows[0].foil is True

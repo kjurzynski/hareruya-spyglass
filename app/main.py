@@ -78,4 +78,5 @@ def get_job(job_id: str):
         results=results,
         error=job.error,
         output=job.output,
+        eur_jpy_rate=job.eur_jpy_rate,
     )
