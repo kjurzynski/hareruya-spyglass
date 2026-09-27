@@ -15,6 +15,7 @@ class Job:
     cards: list[str]
     finish: str
     output: str
+    language: str = "all"
     status: str = "queued"
     completed: int = 0
     results: list[CardResult] = field(default_factory=list)
@@ -28,8 +29,8 @@ class JobManager:
         self._lock = threading.Lock()
         self._executor = ThreadPoolExecutor(max_workers=max_jobs)
 
-    def create(self, cards: list[str], finish: str, output: str) -> Job:
-        job = Job(str(uuid.uuid4()), cards, finish, output)
+    def create(self, cards: list[str], finish: str, output: str, language: str = "all") -> Job:
+        job = Job(str(uuid.uuid4()), cards, finish, output, language)
         with self._lock:
             self._jobs[job.job_id] = job
         self._executor.submit(self._run, job.job_id)
@@ -51,7 +52,7 @@ class JobManager:
                 # FX failure should not prevent the card price search from completing.
                 job.eur_jpy_rate = None
 
-            results = run_cards(job.cards, job.finish, progress=progress)
+            results = run_cards(job.cards, job.finish, progress=progress, language=job.language)
             with self._lock:
                 job.results = results
                 job.completed = len(job.cards)
@@ -72,6 +73,7 @@ class JobManager:
                 cards=list(job.cards),
                 finish=job.finish,
                 output=job.output,
+                language=job.language,
                 status=job.status,
                 completed=job.completed,
                 results=list(job.results),

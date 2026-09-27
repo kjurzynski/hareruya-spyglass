@@ -1,0 +1,1834 @@
+{
+  "74": {
+    "code": "10E",
+    "name": "Tenth Edition"
+  },
+  "3": {
+    "code": "2ED",
+    "name": "Unlimited Edition"
+  },
+  "5070": {
+    "code": "2X2",
+    "name": "Double Masters 2022"
+  },
+  "5071": {
+    "code": "2X2",
+    "name": "Double Masters 2022"
+  },
+  "3204": {
+    "code": "2XM",
+    "name": "Double Masters"
+  },
+  "3209": {
+    "code": "2XM",
+    "name": "Double Masters"
+  },
+  "5199": {
+    "code": "30A",
+    "name": "30th Anniversary Edition"
+  },
+  "6": {
+    "code": "3ED",
+    "name": "Revised Edition"
+  },
+  "5074": {
+    "code": "40K",
+    "name": "Warhammer 40,000 Commander"
+  },
+  "10": {
+    "code": "4ED",
+    "name": "Fourth Edition"
+  },
+  "47": {
+    "code": "5DN",
+    "name": "Fifth Dawn"
+  },
+  "23": {
+    "code": "5ED",
+    "name": "Fifth Edition"
+  },
+  "29": {
+    "code": "6ED",
+    "name": "Classic Sixth Edition"
+  },
+  "37": {
+    "code": "7ED",
+    "name": "Seventh Edition"
+  },
+  "44": {
+    "code": "8ED",
+    "name": "Eighth Edition"
+  },
+  "49": {
+    "code": "9ED",
+    "name": "Ninth Edition"
+  },
+  "1820": {
+    "code": "A25",
+    "name": "Masters 25"
+  },
+  "5655": {
+    "code": "ACR",
+    "name": "Assassin's Creed"
+  },
+  "5656": {
+    "code": "ACR",
+    "name": "Assassin's Creed"
+  },
+  "1718": {
+    "code": "AER",
+    "name": "Aether Revolt"
+  },
+  "4356": {
+    "code": "AFC",
+    "name": "Forgotten Realms Commander"
+  },
+  "4359": {
+    "code": "AFC",
+    "name": "Forgotten Realms Commander"
+  },
+  "4259": {
+    "code": "AFR",
+    "name": "Adventures in the Forgotten Realms"
+  },
+  "4260": {
+    "code": "AFR",
+    "name": "Adventures in the Forgotten Realms"
+  },
+  "1729": {
+    "code": "AKH",
+    "name": "Amonkhet"
+  },
+  "102": {
+    "code": "ALA",
+    "name": "Shards of Alara"
+  },
+  "15": {
+    "code": "ALL",
+    "name": "Alliances"
+  },
+  "2484": {
+    "code": "AMH1",
+    "name": "Modern Horizons Art Series"
+  },
+  "36": {
+    "code": "APC",
+    "name": "Apocalypse"
+  },
+  "108": {
+    "code": "ARB",
+    "name": "Alara Reborn"
+  },
+  "1194": {
+    "code": "ARC",
+    "name": "Archenemy"
+  },
+  "4": {
+    "code": "ARN",
+    "name": "Arabian Nights"
+  },
+  "75": {
+    "code": "ATH",
+    "name": "Anthologies"
+  },
+  "5": {
+    "code": "ATQ",
+    "name": "Antiquities"
+  },
+  "1358": {
+    "code": "AVR",
+    "name": "Avacyn Restored"
+  },
+  "2111": {
+    "code": "BBD",
+    "name": "Battlebond"
+  },
+  "1599": {
+    "code": "BCHR",
+    "name": "Chronicles Foreign Black Border"
+  },
+  "1668": {
+    "code": "BFZ",
+    "name": "Battle for Zendikar"
+  },
+  "5664": {
+    "code": "BIG",
+    "name": "The Big Score"
+  },
+  "5658": {
+    "code": "BLB",
+    "name": "Bloomburrow"
+  },
+  "5659": {
+    "code": "BLB",
+    "name": "Bloomburrow"
+  },
+  "5660": {
+    "code": "BLC",
+    "name": "Bloomburrow Commander"
+  },
+  "5661": {
+    "code": "BLC",
+    "name": "Bloomburrow Commander"
+  },
+  "1469": {
+    "code": "BNG",
+    "name": "Born of the Gods"
+  },
+  "51": {
+    "code": "BOK",
+    "name": "Betrayers of Kamigawa"
+  },
+  "5172": {
+    "code": "BOT",
+    "name": "Transformers"
+  },
+  "64": {
+    "code": "BRB",
+    "name": "Battle Royale Box Set"
+  },
+  "5168": {
+    "code": "BRC",
+    "name": "The Brothers' War Commander"
+  },
+  "5169": {
+    "code": "BRC",
+    "name": "The Brothers' War Commander"
+  },
+  "5164": {
+    "code": "BRO",
+    "name": "The Brothers' War"
+  },
+  "5165": {
+    "code": "BRO",
+    "name": "The Brothers' War"
+  },
+  "5170": {
+    "code": "BRR",
+    "name": "The Brothers' War Retro Artifacts"
+  },
+  "62": {
+    "code": "BTD",
+    "name": "Beatdown Box Set"
+  },
+  "1464": {
+    "code": "C13",
+    "name": "Commander 2013"
+  },
+  "1513": {
+    "code": "C14",
+    "name": "Commander 2014"
+  },
+  "1679": {
+    "code": "C15",
+    "name": "Commander 2015"
+  },
+  "1719": {
+    "code": "C16",
+    "name": "Commander 2016"
+  },
+  "1813": {
+    "code": "C17",
+    "name": "Commander 2017"
+  },
+  "2110": {
+    "code": "C18",
+    "name": "Commander 2018"
+  },
+  "2448": {
+    "code": "C19",
+    "name": "Commander 2019"
+  },
+  "2911": {
+    "code": "C20",
+    "name": "Commander 2020"
+  },
+  "3756": {
+    "code": "C21",
+    "name": "Commander 2021"
+  },
+  "4175": {
+    "code": "C21",
+    "name": "Commander 2021"
+  },
+  "3394": {
+    "code": "CC1",
+    "name": "Commander Collection: Green"
+  },
+  "4400": {
+    "code": "CC2",
+    "name": "Commander Collection: Black"
+  },
+  "61": {
+    "code": "CED",
+    "name": "Collectors' Edition"
+  },
+  "77": {
+    "code": "CEI",
+    "name": "Intl. Collectors' Edition"
+  },
+  "48": {
+    "code": "CHK",
+    "name": "Champions of Kamigawa"
+  },
+  "12": {
+    "code": "CHR",
+    "name": "Chronicles"
+  },
+  "5030": {
+    "code": "CLB",
+    "name": "Commander Legends: Battle for Baldur's Gate"
+  },
+  "5031": {
+    "code": "CLB",
+    "name": "Commander Legends: Battle for Baldur's Gate"
+  },
+  "5572": {
+    "code": "CLU",
+    "name": "Ravnica: Clue Edition"
+  },
+  "1418": {
+    "code": "CM1",
+    "name": "Commander's Arsenal"
+  },
+  "2109": {
+    "code": "CM2",
+    "name": "Commander Anthology Volume II"
+  },
+  "1732": {
+    "code": "CMA",
+    "name": "Commander Anthology"
+  },
+  "1273": {
+    "code": "CMD",
+    "name": "Commander 2011"
+  },
+  "5286": {
+    "code": "CMM",
+    "name": "Commander Masters"
+  },
+  "5418": {
+    "code": "CMM",
+    "name": "Commander Masters"
+  },
+  "3454": {
+    "code": "CMR",
+    "name": "Commander Legends"
+  },
+  "3459": {
+    "code": "CMR",
+    "name": "Commander Legends"
+  },
+  "1702": {
+    "code": "CN2",
+    "name": "Conspiracy: Take the Crown"
+  },
+  "1483": {
+    "code": "CNS",
+    "name": "Conspiracy"
+  },
+  "106": {
+    "code": "CON",
+    "name": "Conflux"
+  },
+  "52": {
+    "code": "CSP",
+    "name": "Coldsnap"
+  },
+  "82": {
+    "code": "CST",
+    "name": "Coldsnap Theme Decks"
+  },
+  "4401": {
+    "code": "DBL",
+    "name": "Innistrad: Double Feature"
+  },
+  "66": {
+    "code": "DCI",
+    "name": "DCI Promos"
+  },
+  "91": {
+    "code": "DD1",
+    "name": "Duel Decks: Elves vs. Goblins"
+  },
+  "104": {
+    "code": "DD2",
+    "name": "Duel Decks: Jace vs. Chandra"
+  },
+  "107": {
+    "code": "DDC",
+    "name": "Duel Decks: Divine vs. Demonic"
+  },
+  "115": {
+    "code": "DDD",
+    "name": "Duel Decks: Garruk vs. Liliana"
+  },
+  "119": {
+    "code": "DDE",
+    "name": "Duel Decks: Phyrexia vs. the Coalition"
+  },
+  "1203": {
+    "code": "DDF",
+    "name": "Duel Decks: Elspeth vs. Tezzeret"
+  },
+  "1261": {
+    "code": "DDG",
+    "name": "Duel Decks: Knights vs. Dragons"
+  },
+  "1288": {
+    "code": "DDH",
+    "name": "Duel Decks: Ajani vs. Nicol Bolas"
+  },
+  "1350": {
+    "code": "DDI",
+    "name": "Duel Decks: Venser vs. Koth"
+  },
+  "1398": {
+    "code": "DDJ",
+    "name": "Duel Decks: Izzet vs. Golgari"
+  },
+  "1430": {
+    "code": "DDK",
+    "name": "Duel Decks: Sorin vs. Tibalt"
+  },
+  "1456": {
+    "code": "DDL",
+    "name": "Duel Decks: Heroes vs. Monsters"
+  },
+  "1477": {
+    "code": "DDM",
+    "name": "Duel Decks: Jace vs. Vraska"
+  },
+  "1496": {
+    "code": "DDN",
+    "name": "Duel Decks: Speed vs. Cunning"
+  },
+  "1593": {
+    "code": "DDO",
+    "name": "Duel Decks: Elspeth vs. Kiora"
+  },
+  "1663": {
+    "code": "DDP",
+    "name": "Duel Decks: Zendikar vs. Eldrazi"
+  },
+  "1692": {
+    "code": "DDQ",
+    "name": "Duel Decks: Blessed vs. Cursed"
+  },
+  "1720": {
+    "code": "DDR",
+    "name": "Duel Decks: Nissa vs. Ob Nixilis"
+  },
+  "1728": {
+    "code": "DDS",
+    "name": "Duel Decks: Mind vs. Might"
+  },
+  "1818": {
+    "code": "DDT",
+    "name": "Duel Decks: Merfolk vs. Goblins"
+  },
+  "2068": {
+    "code": "DDU",
+    "name": "Duel Decks: Elves vs. Inventors"
+  },
+  "5982": {
+    "code": "DFT",
+    "name": "Aetherdrift"
+  },
+  "6011": {
+    "code": "DFT",
+    "name": "Aetherdrift"
+  },
+  "1435": {
+    "code": "DGM",
+    "name": "Dragon's Maze"
+  },
+  "53": {
+    "code": "DIS",
+    "name": "Dissension"
+  },
+  "1345": {
+    "code": "DKA",
+    "name": "Dark Ascension"
+  },
+  "67": {
+    "code": "DKM",
+    "name": "Deckmasters"
+  },
+  "5122": {
+    "code": "DMC",
+    "name": "Dominaria United Commander"
+  },
+  "5123": {
+    "code": "DMC",
+    "name": "Dominaria United Commander"
+  },
+  "5192": {
+    "code": "DMR",
+    "name": "Dominaria Remastered"
+  },
+  "5193": {
+    "code": "DMR",
+    "name": "Dominaria Remastered"
+  },
+  "5072": {
+    "code": "DMU",
+    "name": "Dominaria United"
+  },
+  "5073": {
+    "code": "DMU",
+    "name": "Dominaria United"
+  },
+  "1822": {
+    "code": "DOM",
+    "name": "Dominaria"
+  },
+  "1193": {
+    "code": "DPA",
+    "name": "Duels of the Planeswalkers"
+  },
+  "100": {
+    "code": "DRB",
+    "name": "From the Vault: Dragons"
+  },
+  "5988": {
+    "code": "DRC",
+    "name": "Aetherdrift Commander"
+  },
+  "6022": {
+    "code": "DRC",
+    "name": "Aetherdrift Commander"
+  },
+  "8": {
+    "code": "DRK",
+    "name": "The Dark"
+  },
+  "5808": {
+    "code": "DSC",
+    "name": "Duskmourn: House of Horror Commander"
+  },
+  "5809": {
+    "code": "DSC",
+    "name": "Duskmourn: House of Horror Commander"
+  },
+  "5806": {
+    "code": "DSK",
+    "name": "Duskmourn: House of Horror"
+  },
+  "5807": {
+    "code": "DSK",
+    "name": "Duskmourn: House of Horror"
+  },
+  "46": {
+    "code": "DST",
+    "name": "Darksteel"
+  },
+  "1601": {
+    "code": "DTK",
+    "name": "Dragons of Tarkir"
+  },
+  "1730": {
+    "code": "E01",
+    "name": "Archenemy: Nicol Bolas"
+  },
+  "1830": {
+    "code": "E02",
+    "name": "Explorers of Ixalan"
+  },
+  "6326": {
+    "code": "ECC",
+    "name": "Lorwyn Eclipsed Commander"
+  },
+  "6439": {
+    "code": "ECC",
+    "name": "Lorwyn Eclipsed Commander"
+  },
+  "6325": {
+    "code": "ECL",
+    "name": "Lorwyn Eclipsed"
+  },
+  "6421": {
+    "code": "ECL",
+    "name": "Lorwyn Eclipsed"
+  },
+  "2582": {
+    "code": "ELD",
+    "name": "Throne of Eldraine"
+  },
+  "2587": {
+    "code": "ELD",
+    "name": "Throne of Eldraine"
+  },
+  "1696": {
+    "code": "EMA",
+    "name": "Eternal Masters"
+  },
+  "1695": {
+    "code": "EMN",
+    "name": "Eldritch Moon"
+  },
+  "6064": {
+    "code": "EOC",
+    "name": "Edge of Eternities Commander"
+  },
+  "6202": {
+    "code": "EOC",
+    "name": "Edge of Eternities Commander"
+  },
+  "6063": {
+    "code": "EOE",
+    "name": "Edge of Eternities"
+  },
+  "6174": {
+    "code": "EOE",
+    "name": "Edge of Eternities"
+  },
+  "99": {
+    "code": "EVE",
+    "name": "Eventide"
+  },
+  "21": {
+    "code": "EXO",
+    "name": "Exodus"
+  },
+  "1669": {
+    "code": "EXP",
+    "name": "Zendikar Expeditions"
+  },
+  "57": {
+    "code": "FBB",
+    "name": "Foreign Black Border"
+  },
+  "6059": {
+    "code": "FCA",
+    "name": "Final Fantasy: Through the Ages"
+  },
+  "5852": {
+    "code": "FDN",
+    "name": "Foundations"
+  },
+  "5931": {
+    "code": "FDN",
+    "name": "Foundations"
+  },
+  "9": {
+    "code": "FEM",
+    "name": "Fallen Empires"
+  },
+  "6058": {
+    "code": "FIC",
+    "name": "Final Fantasy Commander"
+  },
+  "6143": {
+    "code": "FIC",
+    "name": "Final Fantasy Commander"
+  },
+  "6057": {
+    "code": "FIN",
+    "name": "Final Fantasy"
+  },
+  "6137": {
+    "code": "FIN",
+    "name": "Final Fantasy"
+  },
+  "1522": {
+    "code": "FRF",
+    "name": "Fate Reforged"
+  },
+  "70": {
+    "code": "FUT",
+    "name": "Future Sight"
+  },
+  "5069": {
+    "code": "GDY",
+    "name": "Game Day Promos"
+  },
+  "2379": {
+    "code": "GK1",
+    "name": "GRN Guild Kit"
+  },
+  "2423": {
+    "code": "GK2",
+    "name": "RNA Guild Kit"
+  },
+  "2804": {
+    "code": "GN2",
+    "name": "Game Night 2019"
+  },
+  "5108": {
+    "code": "GN3",
+    "name": "Game Night: Free-for-All"
+  },
+  "2381": {
+    "code": "GNT",
+    "name": "Game Night"
+  },
+  "54": {
+    "code": "GPT",
+    "name": "Guildpact"
+  },
+  "2348": {
+    "code": "GRN",
+    "name": "Guilds of Ravnica"
+  },
+  "2371": {
+    "code": "GRN",
+    "name": "Guilds of Ravnica"
+  },
+  "2108": {
+    "code": "GS1",
+    "name": "Global Series Jiang Yanggu & Mu Yanling"
+  },
+  "1424": {
+    "code": "GTC",
+    "name": "Gatecrash"
+  },
+  "116": {
+    "code": "H09",
+    "name": "Premium Deck Series: Slivers"
+  },
+  "1841": {
+    "code": "H17",
+    "name": "HasCon 2017"
+  },
+  "4275": {
+    "code": "H1R",
+    "name": "Modern Horizons 1 Timeshifts"
+  },
+  "1247": {
+    "code": "HHO",
+    "name": "Happy Holidays"
+  },
+  "14": {
+    "code": "HML",
+    "name": "Homelands"
+  },
+  "113": {
+    "code": "HOP",
+    "name": "Planechase"
+  },
+  "1731": {
+    "code": "HOU",
+    "name": "Hour of Devastation"
+  },
+  "11": {
+    "code": "ICE",
+    "name": "Ice Age"
+  },
+  "2819": {
+    "code": "IKO",
+    "name": "Ikoria: Lair of Behemoths"
+  },
+  "3113": {
+    "code": "IKO",
+    "name": "Ikoria: Lair of Behemoths"
+  },
+  "1811": {
+    "code": "IMA",
+    "name": "Iconic Masters"
+  },
+  "5930": {
+    "code": "INR",
+    "name": "Innistrad Remastered"
+  },
+  "5977": {
+    "code": "INR",
+    "name": "Innistrad Remastered"
+  },
+  "34": {
+    "code": "INV",
+    "name": "Invasion"
+  },
+  "1327": {
+    "code": "ISD",
+    "name": "Innistrad"
+  },
+  "85": {
+    "code": "ITP",
+    "name": "Introductory Two-Player Set"
+  },
+  "5185": {
+    "code": "J22",
+    "name": "Jumpstart 2022"
+  },
+  "5932": {
+    "code": "J25",
+    "name": "Foundations Jumpstart"
+  },
+  "3053": {
+    "code": "JMP",
+    "name": "Jumpstart"
+  },
+  "1481": {
+    "code": "JOU",
+    "name": "Journey into Nyx"
+  },
+  "40": {
+    "code": "JUD",
+    "name": "Judgment"
+  },
+  "3685": {
+    "code": "KHC",
+    "name": "Kaldheim Commander"
+  },
+  "3660": {
+    "code": "KHM",
+    "name": "Kaldheim"
+  },
+  "3680": {
+    "code": "KHM",
+    "name": "Kaldheim"
+  },
+  "1717": {
+    "code": "KLD",
+    "name": "Kaladesh"
+  },
+  "1495": {
+    "code": "KTK",
+    "name": "Khans of Tarkir"
+  },
+  "5492": {
+    "code": "LCC",
+    "name": "The Lost Caverns of Ixalan Commander"
+  },
+  "5520": {
+    "code": "LCC",
+    "name": "The Lost Caverns of Ixalan Commander"
+  },
+  "5490": {
+    "code": "LCI",
+    "name": "The Lost Caverns of Ixalan"
+  },
+  "5491": {
+    "code": "LCI",
+    "name": "The Lost Caverns of Ixalan"
+  },
+  "1": {
+    "code": "LEA",
+    "name": "Limited Edition Alpha"
+  },
+  "2": {
+    "code": "LEB",
+    "name": "Limited Edition Beta"
+  },
+  "7": {
+    "code": "LEG",
+    "name": "Legends"
+  },
+  "42": {
+    "code": "LGN",
+    "name": "Legions"
+  },
+  "84": {
+    "code": "LRW",
+    "name": "Lorwyn"
+  },
+  "5296": {
+    "code": "LTC",
+    "name": "Tales of Middle-earth Commander"
+  },
+  "5387": {
+    "code": "LTC",
+    "name": "Tales of Middle-earth Commander"
+  },
+  "5285": {
+    "code": "LTR",
+    "name": "The Lord of the Rings: Tales of Middle-earth"
+  },
+  "5308": {
+    "code": "LTR",
+    "name": "The Lord of the Rings: Tales of Middle-earth"
+  },
+  "109": {
+    "code": "M10",
+    "name": "Magic 2010"
+  },
+  "1197": {
+    "code": "M11",
+    "name": "Magic 2011"
+  },
+  "1280": {
+    "code": "M12",
+    "name": "Magic 2012"
+  },
+  "1388": {
+    "code": "M13",
+    "name": "Magic 2013"
+  },
+  "1449": {
+    "code": "M14",
+    "name": "Magic 2014"
+  },
+  "1485": {
+    "code": "M15",
+    "name": "Magic 2015"
+  },
+  "1835": {
+    "code": "M19",
+    "name": "Core Set 2019"
+  },
+  "2447": {
+    "code": "M20",
+    "name": "Core Set 2020"
+  },
+  "2490": {
+    "code": "M20",
+    "name": "Core Set 2020"
+  },
+  "3048": {
+    "code": "M21",
+    "name": "Core Set 2021"
+  },
+  "3309": {
+    "code": "M21",
+    "name": "Core Set 2021"
+  },
+  "5654": {
+    "code": "M3C",
+    "name": "Modern Horizons 3 Commander"
+  },
+  "5657": {
+    "code": "M3C",
+    "name": "Modern Horizons 3 Commander"
+  },
+  "5320": {
+    "code": "MAT",
+    "name": "March of the Machine: The Aftermath"
+  },
+  "5208": {
+    "code": "MAT",
+    "name": "March of the Machine: The Aftermath"
+  },
+  "5854": {
+    "code": "MB2",
+    "name": "Mystery Booster 2"
+  },
+  "1253": {
+    "code": "MBS",
+    "name": "Mirrodin Besieged"
+  },
+  "1484": {
+    "code": "MD1",
+    "name": "Modern Event Deck 2014"
+  },
+  "2373": {
+    "code": "MED",
+    "name": "Mythic Edition"
+  },
+  "1519": {
+    "code": "MGB",
+    "name": "Multiverse Gift Box"
+  },
+  "2440": {
+    "code": "MH1",
+    "name": "Modern Horizons"
+  },
+  "4219": {
+    "code": "MH2",
+    "name": "Modern Horizons 2"
+  },
+  "4244": {
+    "code": "MH2",
+    "name": "Modern Horizons 2"
+  },
+  "5652": {
+    "code": "MH3",
+    "name": "Modern Horizons 3"
+  },
+  "5653": {
+    "code": "MH3",
+    "name": "Modern Horizons 3"
+  },
+  "4365": {
+    "code": "MIC",
+    "name": "Midnight Hunt Commander"
+  },
+  "4362": {
+    "code": "MID",
+    "name": "Innistrad: Midnight Hunt"
+  },
+  "4363": {
+    "code": "MID",
+    "name": "Innistrad: Midnight Hunt"
+  },
+  "16": {
+    "code": "MIR",
+    "name": "Mirage"
+  },
+  "5562": {
+    "code": "MKC",
+    "name": "Murders at Karlov Manor Commander"
+  },
+  "5601": {
+    "code": "MKC",
+    "name": "Murders at Karlov Manor Commander"
+  },
+  "5561": {
+    "code": "MKM",
+    "name": "Murders at Karlov Manor"
+  },
+  "5599": {
+    "code": "MKM",
+    "name": "Murders at Karlov Manor"
+  },
+  "1641": {
+    "code": "MM2",
+    "name": "Modern Masters 2015"
+  },
+  "1727": {
+    "code": "MM3",
+    "name": "Modern Masters 2017"
+  },
+  "1444": {
+    "code": "MMA",
+    "name": "Modern Masters"
+  },
+  "31": {
+    "code": "MMQ",
+    "name": "Mercadian Masques"
+  },
+  "5279": {
+    "code": "MOC",
+    "name": "March of the Machine Commander"
+  },
+  "5280": {
+    "code": "MOC",
+    "name": "March of the Machine Commander"
+  },
+  "5227": {
+    "code": "MOM",
+    "name": "March of the Machine"
+  },
+  "5278": {
+    "code": "MOM",
+    "name": "March of the Machine"
+  },
+  "92": {
+    "code": "MOR",
+    "name": "Morningtide"
+  },
+  "1798": {
+    "code": "MP2",
+    "name": "Amonkhet Invocations"
+  },
+  "1733": {
+    "code": "MPS",
+    "name": "Kaladesh Inventions"
+  },
+  "45": {
+    "code": "MRD",
+    "name": "Mirrodin"
+  },
+  "5284": {
+    "code": "MUL",
+    "name": "Multiverse Legends"
+  },
+  "4977": {
+    "code": "NCC",
+    "name": "New Capenna Commander"
+  },
+  "5040": {
+    "code": "NCC",
+    "name": "New Capenna Commander"
+  },
+  "4474": {
+    "code": "NEC",
+    "name": "Neon Dynasty Commander"
+  },
+  "32": {
+    "code": "NEM",
+    "name": "Nemesis"
+  },
+  "4472": {
+    "code": "NEO",
+    "name": "Kamigawa: Neon Dynasty"
+  },
+  "4473": {
+    "code": "NEO",
+    "name": "Kamigawa: Neon Dynasty"
+  },
+  "1262": {
+    "code": "NPH",
+    "name": "New Phyrexia"
+  },
+  "38": {
+    "code": "ODY",
+    "name": "Odyssey"
+  },
+  "1676": {
+    "code": "OGW",
+    "name": "Oath of the Gatewatch"
+  },
+  "5225": {
+    "code": "ONC",
+    "name": "Phyrexia: All Will Be One Commander"
+  },
+  "5228": {
+    "code": "ONC",
+    "name": "Phyrexia: All Will Be One Commander"
+  },
+  "5184": {
+    "code": "ONE",
+    "name": "Phyrexia: All Will Be One"
+  },
+  "5191": {
+    "code": "ONE",
+    "name": "Phyrexia: All Will Be One"
+  },
+  "41": {
+    "code": "ONS",
+    "name": "Onslaught"
+  },
+  "1652": {
+    "code": "ORI",
+    "name": "Magic Origins"
+  },
+  "5648": {
+    "code": "OTC",
+    "name": "Outlaws of Thunder Junction Commander"
+  },
+  "5663": {
+    "code": "OTC",
+    "name": "Outlaws of Thunder Junction Commander"
+  },
+  "5647": {
+    "code": "OTJ",
+    "name": "Outlaws of Thunder Junction"
+  },
+  "5662": {
+    "code": "OTJ",
+    "name": "Outlaws of Thunder Junction"
+  },
+  "5665": {
+    "code": "OTP",
+    "name": "Breaking News"
+  },
+  "24": {
+    "code": "P02",
+    "name": "Portal Second Age"
+  },
+  "5171": {
+    "code": "P30H",
+    "name": "30th Anniversary History Promos"
+  },
+  "1750": {
+    "code": "PAER",
+    "name": "Aether Revolt Promos"
+  },
+  "4358": {
+    "code": "PAFR",
+    "name": "Adventures in the Forgotten Realms Promos"
+  },
+  "1803": {
+    "code": "PAKH",
+    "name": "Amonkhet Promos"
+  },
+  "97": {
+    "code": "PALP",
+    "name": "Asia Pacific Land Program"
+  },
+  "2333": {
+    "code": "PBBD",
+    "name": "Battlebond Promos"
+  },
+  "1670": {
+    "code": "PBFZ",
+    "name": "Battle for Zendikar Promos"
+  },
+  "5789": {
+    "code": "PBLB",
+    "name": "Bloomburrow Promos"
+  },
+  "5178": {
+    "code": "PBRO",
+    "name": "The Brothers' War Promos"
+  },
+  "1369": {
+    "code": "PC2",
+    "name": "Planechase 2012"
+  },
+  "1722": {
+    "code": "PCA",
+    "name": "Planechase Anthology"
+  },
+  "5084": {
+    "code": "PCLB",
+    "name": "Battle for Baldur's Gate Promos"
+  },
+  "94": {
+    "code": "PCMP",
+    "name": "Champs and States"
+  },
+  "33": {
+    "code": "PCY",
+    "name": "Prophecy"
+  },
+  "1218": {
+    "code": "PD2",
+    "name": "Premium Deck Series: Fire and Lightning"
+  },
+  "1337": {
+    "code": "PD3",
+    "name": "Premium Deck Series: Graveborn"
+  },
+  "5991": {
+    "code": "PDFT",
+    "name": "Aetherdrift Promos"
+  },
+  "5118": {
+    "code": "PDMU",
+    "name": "Dominaria United Promos"
+  },
+  "2315": {
+    "code": "PDOM",
+    "name": "Dominaria Promos"
+  },
+  "5885": {
+    "code": "PDSK",
+    "name": "Duskmourn: House of Horror Promos"
+  },
+  "1602": {
+    "code": "PDTK",
+    "name": "Dragons of Tarkir Promos"
+  },
+  "6436": {
+    "code": "PECL",
+    "name": "Lorwyn Eclipsed Promos"
+  },
+  "2694": {
+    "code": "PELD",
+    "name": "Throne of Eldraine Promos"
+  },
+  "81": {
+    "code": "PELP",
+    "name": "European Land Program"
+  },
+  "1723": {
+    "code": "PEMN",
+    "name": "Eldritch Moon Promos"
+  },
+  "6106": {
+    "code": "PEOE",
+    "name": "Edge of Eternities Promos"
+  },
+  "5940": {
+    "code": "PFDN",
+    "name": "Foundations Promos"
+  },
+  "6162": {
+    "code": "PFIN",
+    "name": "Final Fantasy Promos"
+  },
+  "1589": {
+    "code": "PFRF",
+    "name": "Fate Reforged Promos"
+  },
+  "1595": {
+    "code": "PGPX",
+    "name": "Grand Prix Promos"
+  },
+  "88": {
+    "code": "PGRU",
+    "name": "Guru"
+  },
+  "1825": {
+    "code": "PHOU",
+    "name": "Hour of Devastation Promos"
+  },
+  "71": {
+    "code": "PHPR",
+    "name": "HarperPrism Book Promos"
+  },
+  "1413": {
+    "code": "PIDW",
+    "name": "IDW Comics Inserts"
+  },
+  "3118": {
+    "code": "PIKO",
+    "name": "Ikoria: Lair of Behemoths Promos"
+  },
+  "5544": {
+    "code": "PIP",
+    "name": "Fallout"
+  },
+  "5545": {
+    "code": "PIP",
+    "name": "Fallout"
+  },
+  "87": {
+    "code": "PJJT",
+    "name": "Japan Junior Tournament"
+  },
+  "3723": {
+    "code": "PKHM",
+    "name": "Kaldheim Promos"
+  },
+  "1726": {
+    "code": "PKLD",
+    "name": "Kaladesh Promos"
+  },
+  "1588": {
+    "code": "PKTK",
+    "name": "Khans of Tarkir Promos"
+  },
+  "58": {
+    "code": "PLC",
+    "name": "Planar Chaos"
+  },
+  "5521": {
+    "code": "PLCI",
+    "name": "The Lost Caverns of Ixalan Promos"
+  },
+  "35": {
+    "code": "PLS",
+    "name": "Planeshift"
+  },
+  "3494": {
+    "code": "PLST",
+    "name": "The List"
+  },
+  "5396": {
+    "code": "PLTR",
+    "name": "Tales of Middle-earth Promos"
+  },
+  "2337": {
+    "code": "PM19",
+    "name": "Core Set 2019 Promos"
+  },
+  "3319": {
+    "code": "PM21",
+    "name": "Core Set 2021 Promos"
+  },
+  "4327": {
+    "code": "PMH2",
+    "name": "Modern Horizons 2 Promos"
+  },
+  "5785": {
+    "code": "PMH3",
+    "name": "Modern Horizons 3 Promos"
+  },
+  "4383": {
+    "code": "PMID",
+    "name": "Innistrad: Midnight Hunt Promos"
+  },
+  "5600": {
+    "code": "PMKM",
+    "name": "Murders at Karlov Manor Promos"
+  },
+  "5310": {
+    "code": "PMOM",
+    "name": "March of the Machine Promos"
+  },
+  "5075": {
+    "code": "PNCC",
+    "name": "New Capenna Commander Promos"
+  },
+  "4947": {
+    "code": "PNEO",
+    "name": "Kamigawa: Neon Dynasty Promos"
+  },
+  "1686": {
+    "code": "POGW",
+    "name": "Oath of the Gatewatch Promos"
+  },
+  "5197": {
+    "code": "PONE",
+    "name": "Phyrexia: All Will Be One Promos"
+  },
+  "25": {
+    "code": "POR",
+    "name": "Portal"
+  },
+  "1655": {
+    "code": "PORI",
+    "name": "Magic Origins Promos"
+  },
+  "5669": {
+    "code": "POTJ",
+    "name": "Outlaws of Thunder Junction Promos"
+  },
+  "1596": {
+    "code": "PPRO",
+    "name": "Pro Tour Promos"
+  },
+  "2063": {
+    "code": "PRIX",
+    "name": "Rivals of Ixalan Promos"
+  },
+  "1259": {
+    "code": "PS11",
+    "name": "Salvat 2011"
+  },
+  "1491": {
+    "code": "PS14",
+    "name": "San Diego Comic-Con 2014"
+  },
+  "1658": {
+    "code": "PS15",
+    "name": "San Diego Comic-Con 2015"
+  },
+  "1725": {
+    "code": "PS16",
+    "name": "San Diego Comic-Con 2016"
+  },
+  "1828": {
+    "code": "PS17",
+    "name": "San Diego Comic-Con 2017"
+  },
+  "2341": {
+    "code": "PS18",
+    "name": "San Diego Comic-Con 2018"
+  },
+  "2511": {
+    "code": "PS19",
+    "name": "San Diego Comic-Con 2019"
+  },
+  "105": {
+    "code": "PSAL",
+    "name": "Salvat 2005"
+  },
+  "1454": {
+    "code": "PSDC",
+    "name": "San Diego Comic-Con 2013"
+  },
+  "5039": {
+    "code": "PSNC",
+    "name": "Streets of New Capenna Promos"
+  },
+  "1704": {
+    "code": "PSOI",
+    "name": "Shadows over Innistrad Promos"
+  },
+  "6312": {
+    "code": "PSPM",
+    "name": "Marvel's Spider-Man Promos"
+  },
+  "4176": {
+    "code": "PSTX",
+    "name": "Strixhaven: School of Mages Promos"
+  },
+  "6103": {
+    "code": "PTDM",
+    "name": "Tarkir: Dragonstorm Promos"
+  },
+  "2699": {
+    "code": "PTG",
+    "name": "Ponies: The Galloping"
+  },
+  "2999": {
+    "code": "PTHB",
+    "name": "Theros Beyond Death Promos"
+  },
+  "30": {
+    "code": "PTK",
+    "name": "Portal Three Kingdoms"
+  },
+  "6384": {
+    "code": "PTLA",
+    "name": "Avatar: The Last Airbender Promos"
+  },
+  "2398": {
+    "code": "PUMA",
+    "name": "Ultimate Box Topper"
+  },
+  "69": {
+    "code": "PVAN",
+    "name": "Vanguard Series"
+  },
+  "4461": {
+    "code": "PVOW",
+    "name": "Innistrad: Crimson Vow Promos"
+  },
+  "5463": {
+    "code": "PWOE",
+    "name": "Wilds of Eldraine Promos"
+  },
+  "1847": {
+    "code": "PXLN",
+    "name": "Ixalan Promos"
+  },
+  "3500": {
+    "code": "PZNR",
+    "name": "Zendikar Rising Promos"
+  },
+  "55": {
+    "code": "RAV",
+    "name": "Ravnica: City of Guilds"
+  },
+  "60": {
+    "code": "REN",
+    "name": "Renaissance"
+  },
+  "5522": {
+    "code": "REX",
+    "name": "Jurassic World Collection"
+  },
+  "96": {
+    "code": "RIN",
+    "name": "Rinascimento"
+  },
+  "1829": {
+    "code": "RIX",
+    "name": "Rivals of Ixalan"
+  },
+  "2411": {
+    "code": "RNA",
+    "name": "Ravnica Allegiance"
+  },
+  "2419": {
+    "code": "RNA",
+    "name": "Ravnica Allegiance"
+  },
+  "120": {
+    "code": "ROE",
+    "name": "Rise of the Eldrazi"
+  },
+  "1389": {
+    "code": "RTR",
+    "name": "Return to Ravnica"
+  },
+  "5505": {
+    "code": "RVR",
+    "name": "Ravnica Remastered"
+  },
+  "5506": {
+    "code": "RVR",
+    "name": "Ravnica Remastered"
+  },
+  "65": {
+    "code": "S00",
+    "name": "Starter 2000"
+  },
+  "63": {
+    "code": "S99",
+    "name": "Starter 1999"
+  },
+  "5173": {
+    "code": "SCD",
+    "name": "Starter Commander Decks"
+  },
+  "43": {
+    "code": "SCG",
+    "name": "Scourge"
+  },
+  "95": {
+    "code": "SHM",
+    "name": "Shadowmoor"
+  },
+  "3068": {
+    "code": "SLU",
+    "name": "Secret Lair: Ultimate Edition"
+  },
+  "5038": {
+    "code": "SLX",
+    "name": "Universes Within"
+  },
+  "4975": {
+    "code": "SNC",
+    "name": "Streets of New Capenna"
+  },
+  "4976": {
+    "code": "SNC",
+    "name": "Streets of New Capenna"
+  },
+  "1694": {
+    "code": "SOI",
+    "name": "Shadows over Innistrad"
+  },
+  "50": {
+    "code": "SOK",
+    "name": "Saviors of Kamigawa"
+  },
+  "1206": {
+    "code": "SOM",
+    "name": "Scars of Mirrodin"
+  },
+  "6236": {
+    "code": "SPE",
+    "name": "Marvel's Spider-Man Eternal"
+  },
+  "5523": {
+    "code": "SPG",
+    "name": "Special Guests"
+  },
+  "6070": {
+    "code": "SPM",
+    "name": "Marvel's Spider-Man"
+  },
+  "6234": {
+    "code": "SPM",
+    "name": "Marvel's Spider-Man"
+  },
+  "2103": {
+    "code": "SS1",
+    "name": "Signature Spellbook: Jace"
+  },
+  "2460": {
+    "code": "SS2",
+    "name": "Signature Spellbook: Gideon"
+  },
+  "3063": {
+    "code": "SS3",
+    "name": "Signature Spellbook: Chandra"
+  },
+  "3746": {
+    "code": "STA",
+    "name": "Strixhaven Mystical Archive"
+  },
+  "20": {
+    "code": "STH",
+    "name": "Stronghold"
+  },
+  "3741": {
+    "code": "STX",
+    "name": "Strixhaven: School of Mages"
+  },
+  "3761": {
+    "code": "STX",
+    "name": "Strixhaven: School of Mages"
+  },
+  "76": {
+    "code": "SUM",
+    "name": "Summer Magic / Edgar"
+  },
+  "6062": {
+    "code": "TDC",
+    "name": "Tarkir: Dragonstorm Commander"
+  },
+  "6100": {
+    "code": "TDC",
+    "name": "Tarkir: Dragonstorm Commander"
+  },
+  "6060": {
+    "code": "TDM",
+    "name": "Tarkir: Dragonstorm"
+  },
+  "6091": {
+    "code": "TDM",
+    "name": "Tarkir: Dragonstorm"
+  },
+  "2814": {
+    "code": "THB",
+    "name": "Theros Beyond Death"
+  },
+  "2961": {
+    "code": "THB",
+    "name": "Theros Beyond Death"
+  },
+  "1457": {
+    "code": "THS",
+    "name": "Theros"
+  },
+  "6261": {
+    "code": "TLA",
+    "name": "Avatar: The Last Airbender"
+  },
+  "6263": {
+    "code": "TLA",
+    "name": "Avatar: The Last Airbender"
+  },
+  "6262": {
+    "code": "TLE",
+    "name": "Avatar: The Last Airbender Eternal"
+  },
+  "19": {
+    "code": "TMP",
+    "name": "Tempest"
+  },
+  "6345": {
+    "code": "TMT",
+    "name": "Teenage Mutant Ninja Turtles"
+  },
+  "6470": {
+    "code": "TMT",
+    "name": "Teenage Mutant Ninja Turtles"
+  },
+  "39": {
+    "code": "TOR",
+    "name": "Torment"
+  },
+  "56": {
+    "code": "TSP",
+    "name": "Time Spiral"
+  },
+  "3766": {
+    "code": "TSR",
+    "name": "Time Spiral Remastered"
+  },
+  "3771": {
+    "code": "TSR",
+    "name": "Time Spiral Remastered"
+  },
+  "28": {
+    "code": "UDS",
+    "name": "Urza's Destiny"
+  },
+  "1587": {
+    "code": "UGIN",
+    "name": "Ugin's Fate"
+  },
+  "22": {
+    "code": "UGL",
+    "name": "Unglued"
+  },
+  "27": {
+    "code": "ULG",
+    "name": "Urza's Legacy"
+  },
+  "2397": {
+    "code": "UMA",
+    "name": "Ultimate Masters"
+  },
+  "2809": {
+    "code": "UND",
+    "name": "Unsanctioned"
+  },
+  "4468": {
+    "code": "UNF",
+    "name": "Unfinity"
+  },
+  "4469": {
+    "code": "UNF",
+    "name": "Unfinity"
+  },
+  "59": {
+    "code": "UNH",
+    "name": "Unhinged"
+  },
+  "26": {
+    "code": "USG",
+    "name": "Urza's Saga"
+  },
+  "1821": {
+    "code": "UST",
+    "name": "Unstable"
+  },
+  "112": {
+    "code": "V09",
+    "name": "From the Vault: Exiled"
+  },
+  "1202": {
+    "code": "V10",
+    "name": "From the Vault: Relics"
+  },
+  "1286": {
+    "code": "V11",
+    "name": "From the Vault: Legends"
+  },
+  "1397": {
+    "code": "V12",
+    "name": "From the Vault: Realms"
+  },
+  "1455": {
+    "code": "V13",
+    "name": "From the Vault: Twenty"
+  },
+  "1494": {
+    "code": "V14",
+    "name": "From the Vault: Annihilation"
+  },
+  "1661": {
+    "code": "V15",
+    "name": "From the Vault: Angels"
+  },
+  "1703": {
+    "code": "V16",
+    "name": "From the Vault: Lore"
+  },
+  "1819": {
+    "code": "V17",
+    "name": "From the Vault: Transform"
+  },
+  "17": {
+    "code": "VIS",
+    "name": "Visions"
+  },
+  "4366": {
+    "code": "VOC",
+    "name": "Crimson Vow Commander"
+  },
+  "4364": {
+    "code": "VOW",
+    "name": "Innistrad: Crimson Vow"
+  },
+  "4423": {
+    "code": "VOW",
+    "name": "Innistrad: Crimson Vow"
+  },
+  "1710": {
+    "code": "W16",
+    "name": "Welcome Deck 2016"
+  },
+  "1802": {
+    "code": "W17",
+    "name": "Welcome Deck 2017"
+  },
+  "2439": {
+    "code": "WAR",
+    "name": "War of the Spark"
+  },
+  "2451": {
+    "code": "WAR",
+    "name": "War of the Spark"
+  },
+  "5358": {
+    "code": "WHO",
+    "name": "Doctor Who"
+  },
+  "5424": {
+    "code": "WHO",
+    "name": "Doctor Who"
+  },
+  "5360": {
+    "code": "WOC",
+    "name": "Wilds of Eldraine Commander"
+  },
+  "5425": {
+    "code": "WOC",
+    "name": "Wilds of Eldraine Commander"
+  },
+  "5359": {
+    "code": "WOE",
+    "name": "Wilds of Eldraine"
+  },
+  "5428": {
+    "code": "WOE",
+    "name": "Wilds of Eldraine"
+  },
+  "5442": {
+    "code": "WOT",
+    "name": "Wilds of Eldraine: Enchanting Tales"
+  },
+  "18": {
+    "code": "WTH",
+    "name": "Weatherlight"
+  },
+  "118": {
+    "code": "WWK",
+    "name": "Worldwake"
+  },
+  "1812": {
+    "code": "XLN",
+    "name": "Ixalan"
+  },
+  "114": {
+    "code": "ZEN",
+    "name": "Zendikar"
+  },
+  "3399": {
+    "code": "ZNC",
+    "name": "Zendikar Rising Commander"
+  },
+  "3489": {
+    "code": "ZNE",
+    "name": "Zendikar Rising Expeditions"
+  },
+  "3404": {
+    "code": "ZNR",
+    "name": "Zendikar Rising"
+  },
+  "3474": {
+    "code": "ZNR",
+    "name": "Zendikar Rising"
+  }
+}

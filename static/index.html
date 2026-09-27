@@ -4,17 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Hareruya Spyglass</title>
-  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="/static/styles.css?v=36">
 </head>
 <body>
   <main class="shell">
     <header>
       <h1>Hareruya Spyglass</h1>
+      <a class="top-data-link" href="/cardmarket">Cardmarket price data ↗</a>
     </header>
 
     <section class="panel form-panel">
       <label for="cards">Card list</label>
       <p class="hint">Use the Moxfield plain text format. Leading quantities such as <code>4</code> are ignored. Popular cards with many variants such as Sol Ring may cause the script to run for an extended period. 100 cards is the maximum amount allowed.</p>
+      <p class="cardmarket-disclaimer"><strong>Cardmarket prices exclude shipping and are not differentiated by card language.</strong></p>
       <textarea id="cards" spellcheck="false" placeholder="4 Lightning Bolt&#10;2 Counterspell&#10;1 Black Lotus"></textarea>
 
       <div class="options">
@@ -24,6 +26,14 @@
             <option value="all">All</option>
             <option value="foil">Foil</option>
             <option value="nonfoil">Non-foil</option>
+          </select>
+        </div>
+        <div>
+          <label for="language">Language</label>
+          <select id="language">
+            <option value="all">All</option>
+            <option value="EN">EN</option>
+            <option value="JP">JP</option>
           </select>
         </div>
         <div>
@@ -39,10 +49,14 @@
       <button id="check">Check prices</button>
       <div id="status" class="status">Ready.</div>
       <div class="progress-track"><div id="progress" class="progress"></div></div>
+      <div id="search-warnings" class="search-warnings" hidden></div>
     </section>
+
+
 
     <section id="results" class="results hidden"></section>
   </main>
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v=35"></script>
 </body>
 </html>
+

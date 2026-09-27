@@ -325,20 +325,24 @@ def crawl(card_name: str, page) -> list[Listing]:
     return rows
 
 
-def select_rows(rows: list[Listing], card_name: str, finish: str) -> list[Listing]:
+def select_rows(rows: list[Listing], card_name: str, finish: str, language: str = "all") -> list[Listing]:
     selected = [row for row in rows if contains_card(row.title, card_name)]
     if finish == "foil":
         selected = [row for row in selected if row.foil]
     elif finish == "nonfoil":
         selected = [row for row in selected if not row.foil]
+    if language == "EN":
+        selected = [row for row in selected if row.language == "EN"]
+    elif language == "JP":
+        selected = [row for row in selected if row.language == "JP"]
     return sorted((row for row in selected if row.stock > 0), key=lambda row: row.price)
 
 
-def check_card(card_name: str, finish: str, playwright, browser) -> CardResult:
+def check_card(card_name: str, finish: str, playwright, browser, language: str = "all") -> CardResult:
     context = browser.new_context(user_agent=USER_AGENT, locale="en-US")
     page = context.new_page()
     try:
-        rows = select_rows(crawl(card_name, page), card_name, finish)
+        rows = select_rows(crawl(card_name, page), card_name, finish, language)
         return CardResult(card_name, rows)
     except HareruyaError as exc:
         return CardResult(card_name, [], str(exc))
@@ -348,7 +352,7 @@ def check_card(card_name: str, finish: str, playwright, browser) -> CardResult:
         context.close()
 
 
-def run_cards(card_names: list[str], finish: str, progress=None, worker_count: int | None = None) -> list[CardResult]:
+def run_cards(card_names: list[str], finish: str, progress=None, worker_count: int | None = None, language: str = "all") -> list[CardResult]:
     """Run bounded concurrent Playwright workers and preserve input order."""
     from concurrent.futures import ThreadPoolExecutor, as_completed
     import threading
@@ -365,7 +369,7 @@ def run_cards(card_names: list[str], finish: str, progress=None, worker_count: i
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)
             try:
-                return index, check_card(card_name, finish, playwright, browser)
+                return index, check_card(card_name, finish, playwright, browser, language)
             finally:
                 browser.close()
 

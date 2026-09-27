@@ -1,5 +1,6 @@
 const cardsEl = document.getElementById('cards');
 const finishEl = document.getElementById('finish');
+const languageEl = document.getElementById('language');
 const outputCheapestEl = document.getElementById('outputCheapest');
 const outputAllEl = document.getElementById('outputAll');
 const outputBothEl = document.getElementById('outputBoth');
@@ -7,10 +8,33 @@ const checkEl = document.getElementById('check');
 const statusEl = document.getElementById('status');
 const progressEl = document.getElementById('progress');
 const resultsEl = document.getElementById('results');
-
+const warningsEl = document.getElementById('search-warnings');
 let pollTimer = null;
 let runStartedAt = 0;
 let timerInterval = null;
+
+
+function renderSearchWarnings(results) {
+  if (!warningsEl) return;
+  const warnings = [];
+  const ambiguous = results.some(result =>
+    result.rows.some(row => row.cardmarket?.ambiguous)
+  );
+  if (!ambiguous) {
+    warningsEl.hidden = true;
+    warningsEl.innerHTML = '';
+    return;
+  }
+  warnings.push('<strong>WARNING:</strong> <strong>Cardmarket prices may be ambiguous - multiple variants available for card name and expansion. Please verify the prices for results marked in yellow.</strong>');
+  warningsEl.innerHTML = warnings.map(message => `<div>${message}</div>`).join('');
+  warningsEl.hidden = false;
+}
+
+function clearSearchWarnings() {
+  if (!warningsEl) return;
+  warningsEl.hidden = true;
+  warningsEl.innerHTML = '';
+}
 
 function parseCards(text) {
   return text.split(/\r?\n|\s*,\s*(?=\d+\s+)/)
@@ -28,6 +52,30 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 }
 function finishText(row) { return row.foil ? 'Foil' : 'Non-foil'; }
+
+function euroMetric(value) {
+  return value === null || value === undefined || Number.isNaN(Number(value))
+    ? '—'
+    : `€ ${Number(value).toFixed(2)}`;
+}
+
+function cardmarketPrices(row, includeLink = false, showHeading = false) {
+  const cm = row.cardmarket;
+  if (!cm) return '<span class="cardmarket-unavailable">Not found</span>';
+  const isFoil = typeof row.foil === 'boolean'
+    ? row.foil
+    : String(row.finish || '').toLowerCase() === 'foil';
+  const data = isFoil ? cm.foil : cm.nonfoil;
+  if (!data) return '<span class="cardmarket-unavailable">Not found</span>';
+  const link = includeLink && cm.cardmarket_url
+    ? ` <a class="cardmarket-link" href="${escapeHtml(cm.cardmarket_url)}" target="_blank" rel="noopener noreferrer">CM ↗</a>`
+    : '';
+  const heading = showHeading ? `<div class="cardmarket-heading">Cardmarket${link}</div>` : '';
+  const warning = cm.ambiguous
+    ? `<span class="cardmarket-warning" title="${escapeHtml(cm.ambiguity_reason || 'Cardmarket has multiple variants for this card and expansion, so the displayed price may not match the exact printing/art variant.')}">⚠️</span>`
+    : '';
+  return `<div class="cardmarket-prices">${heading}<div class="cardmarket-variant"><span>Low ${euroMetric(data?.low)}</span><span>7d ${euroMetric(data?.avg7)}</span>${warning}</div></div>`;
+}
 
 function sortRows(rows, key, direction) {
   const sign = direction === 'desc' ? -1 : 1;
@@ -67,10 +115,10 @@ function listingButton(row) {
 function previewButton(row) {
   const image = row.image_url ? escapeHtml(row.image_url) : '';
   const title = escapeHtml(row.title || 'Card image');
-  return `<span class="preview-button" tabindex="0" data-image-url="${image}" data-image-title="${title}" aria-label="Preview card image">Preview</span>`;
+  return `<span class="preview-button${row.foil ? ' foil-preview' : ''}" tabindex="0" data-image-url="${image}" data-image-title="${title}" data-is-foil="${row.foil ? '1' : '0'}" aria-label="Preview card image">Preview</span>`;
 }
 
-function mobileCardMarkup(row, cardName = '', eurJpyRate = null) {
+function mobileCardMarkup(row, cardName = '', eurJpyRate = null, colspan = 8) {
   const name = escapeHtml(cardName || row.title || 'Card');
   const title = escapeHtml(row.title || cardName || 'Card');
   const image = row.image_url
@@ -78,8 +126,9 @@ function mobileCardMarkup(row, cardName = '', eurJpyRate = null) {
     : '<div class="mobile-card-image mobile-card-image-empty" aria-hidden="true">No image</div>';
   const finish = finishText(row);
   const finishClass = row.foil ? ' foil' : ' nonfoil';
-  const card = `<div class="mobile-listing-card">
-      <div class="mobile-card-media">${image}</div>
+  const ambiguousClass = row.cardmarket?.ambiguous ? ' cardmarket-ambiguous' : '';
+  const card = `<div class="mobile-listing-card${ambiguousClass}">
+      <div class="mobile-card-media${row.foil ? ' foil-preview' : ''}">${image}</div>
       <div class="mobile-card-info">
         <div class="mobile-card-name" title="${title}">${name}</div>
         <div class="mobile-card-price price">${money(row.price, eurJpyRate)}</div>
@@ -88,6 +137,7 @@ function mobileCardMarkup(row, cardName = '', eurJpyRate = null) {
           <span class="mobile-badge badge-expansion">${escapeHtml(row.expansion)}</span>
           <span class="mobile-badge badge-finish${finishClass}">${finish}</span>
         </div>
+        <div class="mobile-cardmarket">${cardmarketPrices(row, false, true)}</div>
       </div>
       ${row.url ? '<span class="mobile-card-chevron" aria-hidden="true">›</span>' : ''}
     </div>`;
@@ -95,7 +145,7 @@ function mobileCardMarkup(row, cardName = '', eurJpyRate = null) {
     ? `<a class="mobile-listing-link" href="${escapeHtml(row.url)}" target="_blank" rel="noopener noreferrer" aria-label="View listing for ${name}">${card}</a>`
     : `<div class="mobile-listing-link mobile-listing-link-unavailable">${card}</div>`;
 
-  return `<td class="mobile-result" colspan="7">${content}</td>`;
+  return `<td class="mobile-result" colspan="${colspan}">${content}</td>`;
 }
 
 function renderTable(container, rows, keyPrefix, eurJpyRate = null, options = {}) {
@@ -112,16 +162,17 @@ function renderTable(container, rows, keyPrefix, eurJpyRate = null, options = {}
   function draw() {
     const filtered = sortRows(filterRows(rows, state), state.sort, state.direction);
     const arrow = key => state.sort === key ? (state.direction === 'asc' ? ' ↑' : ' ↓') : '';
-    const body = filtered.length ? filtered.map(row => `<tr class="listing-row">
+    const body = filtered.length ? filtered.map(row => `<tr class="listing-row${row.cardmarket?.ambiguous ? ' cardmarket-ambiguous-row' : ''}">
       <td class="price" data-label="Price">${money(row.price, eurJpyRate)}</td>
       <td data-label="Language">${escapeHtml(row.language)}</td>
       <td data-label="Expansion">${escapeHtml(row.expansion)}</td>
       <td data-label="Finish">${finishText(row)}</td>
       <td data-label="Full title">${escapeHtml(row.title)}</td>
+      <td data-label="Cardmarket">${cardmarketPrices(row)}</td>
       <td data-label="Listing">${listingButton(row)}</td>
       <td data-label="Preview">${previewButton(row)}</td>
       ${mobileCardMarkup(row, options.cardName || '', eurJpyRate)}
-    </tr>`).join('') : `<tr><td colspan="7" class="no-results">No listings match the current filters.</td></tr>`;
+    </tr>`).join('') : `<tr><td colspan="8" class="no-results">No listings match the current filters.</td></tr>`;
 
     container.querySelector('.table-count').textContent = `${filtered.length} / ${rows.length}`;
     container.querySelector('tbody').innerHTML = body;
@@ -163,6 +214,7 @@ function renderTable(container, rows, keyPrefix, eurJpyRate = null, options = {}
         <th data-sort="expansion" data-label="Expansion">Expansion</th>
         <th data-sort="finish" data-label="Finish">Finish</th>
         <th data-sort="title" data-label="Full title">Full title</th>
+        <th class="cardmarket-heading-cell">Cardmarket</th>
         <th class="listing-heading">Listing</th>
         <th class="preview-heading">Preview</th>
       </tr></thead>
@@ -215,12 +267,14 @@ function renderCheapest(results, eurJpyRate = null) {
     language: r.rows[0].language,
     expansion: r.rows[0].expansion,
     finish: finishText(r.rows[0]),
+    foil: r.rows[0].foil,
     title: r.rows[0].title,
     url: r.rows[0].url,
     image_url: r.rows[0].image_url,
+    cardmarket: r.rows[0].cardmarket,
     error: r.error
   } : {
-    card: r.card_name, price: null, language: '-', expansion: '-', finish: '-', title: r.card_name, url: '', image_url: '', error: r.error
+    card: r.card_name, price: null, language: '-', expansion: '-', finish: '-', foil: false, title: r.card_name, url: '', image_url: '', cardmarket: null, error: r.error
   });
 
   const section = document.createElement('section');
@@ -258,6 +312,7 @@ function renderCheapest(results, eurJpyRate = null) {
       <th data-sort="expansion" data-label="Expansion">Expansion</th>
       <th data-sort="finish" data-label="Finish">Finish</th>
       <th data-sort="title" data-label="Full title">Full title</th>
+      <th class="cardmarket-heading-cell">Cardmarket</th>
       <th class="listing-heading">Listing</th>
       <th class="preview-heading">Preview</th>
     </tr></thead><tbody></tbody></table></div>`;
@@ -293,8 +348,8 @@ function renderCheapest(results, eurJpyRate = null) {
     const visible = sort(filtered());
     section.querySelector('.table-count').textContent = `${visible.length} / ${rows.length}`;
     section.querySelector('tbody').innerHTML = visible.map(r => r.price === null ?
-      `<tr><td data-label="Card">${escapeHtml(r.card)}</td><td colspan="7" class="no-results">No matching in-stock listing${r.error ? `: ${escapeHtml(r.error)}` : ''}</td></tr>` :
-      `<tr class="listing-row"><td data-label="Card">${escapeHtml(r.card)}</td><td class="price" data-label="Price">${money(r.price, eurJpyRate)}</td><td data-label="Language">${escapeHtml(r.language)}</td><td data-label="Expansion">${escapeHtml(r.expansion)}</td><td data-label="Finish">${escapeHtml(r.finish)}</td><td data-label="Full title">${escapeHtml(r.title)}</td><td data-label="Listing">${listingButton(r)}</td><td data-label="Preview">${previewButton(r)}</td>${mobileCardMarkup(r, r.card, eurJpyRate)}</tr>`
+      `<tr><td data-label="Card">${escapeHtml(r.card)}</td><td colspan="8" class="no-results">No matching in-stock listing${r.error ? `: ${escapeHtml(r.error)}` : ''}</td></tr>` :
+      `<tr class="listing-row${r.cardmarket?.ambiguous ? ' cardmarket-ambiguous-row' : ''}"><td data-label="Card">${escapeHtml(r.card)}</td><td class="price" data-label="Price">${money(r.price, eurJpyRate)}</td><td data-label="Language">${escapeHtml(r.language)}</td><td data-label="Expansion">${escapeHtml(r.expansion)}</td><td data-label="Finish">${escapeHtml(r.finish)}</td><td data-label="Full title">${escapeHtml(r.title)}</td><td data-label="Cardmarket">${cardmarketPrices(r)}</td><td data-label="Listing">${listingButton(r)}</td><td data-label="Preview">${previewButton(r)}</td>${mobileCardMarkup(r, r.card, eurJpyRate, 9)}</tr>`
     ).join('');
     for (const th of section.querySelectorAll('th[data-sort]')) {
       const active = state.sort === th.dataset.sort;
@@ -468,6 +523,7 @@ function stopTimer() {
 }
 
 async function start() {
+  clearSearchWarnings();
   if (pollTimer) clearTimeout(pollTimer);
   const cards = parseCards(cardsEl.value);
   if (!cards.length) { statusEl.textContent = 'Enter at least one card.'; return; }
@@ -483,7 +539,7 @@ async function start() {
   try {
     const response = await fetch('/api/jobs', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({cards, finish:finishEl.value, output:outputMode()})
+      body:JSON.stringify({cards, finish:finishEl.value, language:languageEl.value, output:outputMode()})
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.detail || 'Could not create job.');
@@ -506,6 +562,7 @@ async function poll(jobId) {
     else updateTiming(job.completed, job.total);
     if (job.status === 'complete') {
       render(job.results, job.output, job.eur_jpy_rate);
+      renderSearchWarnings(job.results);
       stopTimer();
       checkEl.disabled = false;
       return;
@@ -573,6 +630,7 @@ function showPreview(button) {
   const overlay = ensurePreviewOverlay();
   const url = button.dataset.imageUrl || '';
   const title = button.dataset.imageTitle || 'Card image';
+  overlay.classList.toggle('foil-preview', button.dataset.isFoil === '1');
   overlay.hidden = false;
 
   if (!url) {
@@ -651,3 +709,5 @@ window.addEventListener('resize', () => {
 });
 
 syncMobileFilters();
+
+

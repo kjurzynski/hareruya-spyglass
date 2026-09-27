@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cardmarket Price Data | Hareruya Spyglass</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <main class="shell cardmarket-page">
+    <header>
+      <h1>Cardmarket Price Data</h1>
+      <a class="top-data-link" href="/">Hareruya search ↗</a>
+    </header>
+
+    <section class="panel">
+      <div class="cardmarket-view-tools">
+        <div class="cardmarket-query-group">
+          <input id="cardmarketQuery" type="search" placeholder="Search card name…">
+          <label class="cardmarket-exact-option"><input id="cardmarketExact" type="checkbox"> Exact search only</label>
+        </div>
+        <input id="cardmarketExpansion" type="text" placeholder="Expansion, e.g. SOA">
+        <button id="cardmarketSearch" type="button">Search</button>
+      </div>
+      <div class="cardmarket-local-meta"><div id="cardmarketTableStatus" class="cm-page-status">Enter search criteria and click Search.</div><div id="cardmarketFreshness" class="cm-page-status"></div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Card</th>
+            <th>Expansion</th>
+            <th>Set name</th>
+            <th>Prices</th>
+            <th>Prices - Foil</th>
+            <th>Cardmarket</th>
+          </tr></thead>
+          <tbody id="cardmarketTableBody"></tbody>
+        </table>
+      </div>
+      <div class="cm-pagination">
+        <button id="cardmarketPrev" type="button">Previous</button>
+        <span id="cardmarketPageStatus" class="cm-page-status"></span>
+        <button id="cardmarketNext" type="button">Next</button>
+      </div>
+    </section>
+  </main>
+  <script src="/static/cardmarket.js?v=39"></script>
+</body>
+</html>
