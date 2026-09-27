@@ -51,7 +51,6 @@ tr:last-child td { border-bottom:0; }
 .listing-button:hover { background:var(--red-dark); }
 .preview-button { position:relative; display:inline-flex; align-items:center; justify-content:center; min-width:72px; padding:6px 10px; border-radius:7px; background:var(--field); color:var(--text); border:1px solid var(--border); font-weight:700; font-size:12px; white-space:nowrap; cursor:default; }
 .preview-button:hover, .preview-button:focus-visible { background:#eee; outline:none; }
-.preview-unavailable { color:var(--muted); }
 
 .empty,.error,.no-results { padding:18px; background:var(--field); border-radius:9px; color:var(--muted); }
 .hidden { display:none; }
@@ -138,14 +137,13 @@ tr:last-child td { border-bottom:0; }
 .cardmarket-heading { font-size:11px; font-weight:800; color:var(--text); }
 .cardmarket-heading-cell { width:330px; cursor:default; }
 .cardmarket-variant { display:flex; flex-wrap:wrap; gap:5px 9px; align-items:baseline; font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; }
-.cardmarket-variant-label { color:var(--text); font-weight:750; min-width:60px; }
 .cardmarket-unavailable { color:var(--muted); font-size:11px; }
 .cardmarket-warning { display:inline-flex; align-items:center; justify-content:center; margin-left:2px; font-size:16px; line-height:1; cursor:help; }
 .search-warnings { margin-top:9px; color:var(--red); font-size:13px; line-height:1.4; font-weight:700; }
 .cardmarket-disclaimer { font-size:13px; margin:0 0 10px; color:var(--muted); line-height:1.4; font-weight:400; }
-tr.cardmarket-ambiguous-row > td { background:#fff9df; }
+td.cardmarket-ambiguous-price-cell { background:#fff9df; }
 .mobile-cardmarket .cardmarket-warning { display:none; }
-.mobile-listing-card.cardmarket-ambiguous { background:#fff9df; border-color:#e7d99f; box-shadow:0 3px 12px rgba(145,112,0,.06); }
+.mobile-cardmarket.cardmarket-ambiguous-prices { background:#fff9df; border-radius:7px; padding:5px 6px; box-shadow:0 2px 8px rgba(145,112,0,.06); }
 .mobile-cardmarket { width:100%; min-width:0; }
 .mobile-cardmarket .cardmarket-prices { min-width:0; gap:3px; padding-top:1px; border-top:1px solid var(--border); }
 .mobile-cardmarket .cardmarket-heading { font-size:10px; color:var(--muted); }
@@ -168,7 +166,6 @@ tr.cardmarket-ambiguous-row > td { background:#fff9df; }
 .cardmarket-page table { width:max-content; min-width:100%; max-width:none; }
 .cardmarket-page th { position:sticky; }
 .cardmarket-page th, .cardmarket-page td { white-space:nowrap; }
-.cm-number { font-variant-numeric:tabular-nums; }
 .cm-variant-line { font-size:12px; line-height:1.35; }
 .cm-muted { color:var(--muted); font-size:12px; }
 .cm-link { color:var(--red); font-weight:800; text-decoration:none; }

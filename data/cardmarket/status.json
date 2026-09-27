@@ -1,0 +1,15 @@
+{
+  "state": "ready",
+  "started_at": "2026-09-27T19:01:28.278001Z",
+  "updated_at": "2026-09-27T19:01:32.453617Z",
+  "row_count": 122884,
+  "mapped_expansion_ids": 766,
+  "unmapped_expansion_ids": [],
+  "expansion_map_count": 766,
+  "supplemental_expansion_map_count": 0,
+  "catalog_verified_expansion_map_count": 0,
+  "combined_expansion_map_count": 766,
+  "product_count": 122884,
+  "price_count": 127969,
+  "message": "Local Cardmarket price data is ready."
+}

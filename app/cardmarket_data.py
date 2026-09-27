@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import csv
-import json
-import os
-import re
 import gzip
 import io
+import json
+import os
 import tempfile
 import threading
 import unicodedata
@@ -15,8 +14,6 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from pathlib import Path
 from typing import Any, Callable, Iterator
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-from urllib.parse import urlencode
-
 import httpx
 
 
@@ -26,17 +23,13 @@ CARDMARKET_PRICE_GUIDE_URL = (
 CARDMARKET_PRODUCT_LIST_URL = (
     "https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_1.json"
 )
-MTGJSON_SET_LIST_URL = "https://mtgjson.com/api/v5/SetList.json.gz"
-
 DATA_ROOT = Path(__file__).resolve().parent.parent / "data" / "cardmarket"
 RAW_DIR = DATA_ROOT / "raw"
 REFERENCE_DIR = DATA_ROOT / "reference"
 MERGED_DIR = DATA_ROOT / "merged"
 PRICE_GUIDE_FILE = RAW_DIR / "price_guide_1.json"
 PRODUCT_LIST_FILE = RAW_DIR / "products_singles_1.json"
-EXPANSION_SET_MAP_FILE = REFERENCE_DIR / "cardmarket_expansion_set_map.json"
-EXPANSION_SET_MAP_STATUS_FILE = REFERENCE_DIR / "cardmarket_expansion_set_map_status.json"
-MTGJSON_SET_LIST_FILE = RAW_DIR / "mtgjson_set_list.json.gz"
+BUNDLED_EXPANSION_MAP_FILE = REFERENCE_DIR / "expansion_ids_map.txt"
 EXPANSION_OVERRIDES_FILE = REFERENCE_DIR / "expansion_overrides.json"
 SUPPLEMENTAL_EXPANSION_MAP_FILE = REFERENCE_DIR / "expansion_map.csv"
 CATALOG_VERIFIED_EXPANSION_MAP_FILE = REFERENCE_DIR / "card_catalog_verified_expansion_map.json"
@@ -101,6 +94,23 @@ def _clean_text(value: str) -> str:
 
 def normalize_name(value: str) -> str:
     return _clean_text(unicodedata.normalize("NFKC", value)).casefold()
+
+
+def normalize_expansion_code(value: Any) -> str:
+    """Normalize Cardmarket expansion codes to the app's short-code format.
+
+    Rules:
+    - Any code containing ``SLD`` becomes ``SLD``.
+    - Any exactly 4-character code beginning with ``X`` loses that leading ``X``.
+    - Any exactly 4-character code beginning with ``P`` loses that leading ``P``.
+    - All other codes are left unchanged.
+    """
+    code = _clean_text(str(value or "")).strip().upper()
+    if "SLD" in code:
+        return "SLD"
+    if len(code) == 4 and code[0] in {"X", "P"}:
+        return code[1:]
+    return code
 
 
 def _as_int(value: Any) -> int | None:
@@ -251,13 +261,36 @@ def load_prices() -> dict[int, PriceGuide]:
 
 
 def load_expansion_set_map() -> dict[str, dict[str, str]]:
-    if not EXPANSION_SET_MAP_FILE.exists():
+    """Load the bundled Cardmarket expansion-ID map used by the updater.
+
+    The bundled file is a JSON document stored with a .txt extension because
+    that is the source file supplied for the project. Its `data.expansions`
+    object is normalized to the internal `{id: {code, name, ...}}` shape.
+    No network request is made here.
+    """
+    if not BUNDLED_EXPANSION_MAP_FILE.exists():
         return {}
     try:
-        raw = _load_json(EXPANSION_SET_MAP_FILE)
+        raw = _load_json(BUNDLED_EXPANSION_MAP_FILE)
     except (OSError, json.JSONDecodeError):
         return {}
-    return raw if isinstance(raw, dict) else {}
+    expansions = raw.get("data", {}).get("expansions") if isinstance(raw, dict) else None
+    if not isinstance(expansions, dict):
+        return {}
+    mapping: dict[str, dict[str, str]] = {}
+    for key, value in expansions.items():
+        if not isinstance(value, dict):
+            continue
+        code = normalize_expansion_code(value.get("code"))
+        name = _clean_text(str(value.get("name") or "")).strip()
+        if not code and not name:
+            continue
+        mapping[str(key)] = {
+            "code": code,
+            "name": name,
+            "source": "bundled_cardmarket_map",
+        }
+    return mapping
 
 
 def load_expansion_overrides() -> dict[str, str]:
@@ -280,7 +313,7 @@ def load_supplemental_expansion_map() -> dict[str, dict[str, str]]:
                 expansion_id = _as_int(_field(row, "id_expansion", "idExpansion"))
                 if expansion_id is None:
                     continue
-                code = _clean_text(str(_field(row, "expansion_code", "expansion_codes") or "")).strip().upper()
+                code = normalize_expansion_code(_field(row, "expansion_code", "expansion_codes"))
                 name = _clean_text(str(_field(row, "expansion_name") or "")).strip()
                 if not code and not name:
                     continue
@@ -309,7 +342,7 @@ def load_catalog_verified_expansion_map() -> dict[str, dict[str, str]]:
     for key, value in raw.items():
         if not isinstance(value, dict):
             continue
-        code = _clean_text(str(value.get("code") or "")).strip().upper()
+        code = normalize_expansion_code(value.get("code"))
         name = _clean_text(str(value.get("name") or "")).strip()
         if not code and not name:
             continue
@@ -323,49 +356,6 @@ def load_catalog_verified_expansion_map() -> dict[str, dict[str, str]]:
                 entry[field] = str(value[field])
         mapping[str(key)] = entry
     return mapping
-
-
-def parse_mtgjson_set_list(payload: Any) -> dict[str, dict[str, str]]:
-    """Build Cardmarket expansion-ID -> MTGJSON short set-code mapping."""
-    rows = payload.get("data") if isinstance(payload, dict) else payload
-    if isinstance(rows, dict):
-        rows = rows.values()
-    if not isinstance(rows, (list, tuple)) and not hasattr(rows, "__iter__"):
-        return {}
-
-    mapping: dict[str, dict[str, str]] = {}
-    conflicts: set[str] = set()
-    for row in rows:
-        if not isinstance(row, dict):
-            continue
-        code = str(row.get("code") or "").strip().upper()
-        name = _clean_text(str(row.get("name") or row.get("mcmName") or ""))
-        if not code:
-            continue
-        for field in ("mcmId", "mcmIdExtras"):
-            expansion_id = _as_int(row.get(field))
-            if expansion_id is None:
-                continue
-            key = str(expansion_id)
-            candidate = {"code": code, "name": name}
-            current = mapping.get(key)
-            if current and current != candidate:
-                conflicts.add(key)
-            else:
-                mapping[key] = candidate
-
-    for key in conflicts:
-        mapping.pop(key, None)
-    return mapping
-
-
-def build_expansion_set_map(path: Path) -> dict[str, dict[str, str]]:
-    if path.suffix.lower() == ".gz":
-        with gzip.open(path, "rt", encoding="utf-8") as handle:
-            payload = json.load(handle)
-    else:
-        payload = _load_json(path)
-    return parse_mtgjson_set_list(payload)
 
 
 def _download_json(url: str, destination: Path, callback: Callable[[int | None], None] | None = None) -> int:
@@ -393,86 +383,6 @@ def _download_json(url: str, destination: Path, callback: Callable[[int | None],
     return written
 
 
-def iter_json_array(path: Path, chunk_size: int = 1024 * 1024) -> Iterator[Any]:
-    """Stream a top-level JSON array without loading the entire file into RAM."""
-    decoder = json.JSONDecoder()
-    with path.open("r", encoding="utf-8") as handle:
-        buffer = ""
-        position = 0
-        started = False
-        eof = False
-
-        while True:
-            if not eof and len(buffer) - position < 64 * 1024:
-                chunk = handle.read(chunk_size)
-                if chunk:
-                    if position:
-                        buffer = buffer[position:]
-                        position = 0
-                    buffer += chunk
-                else:
-                    eof = True
-
-            while position < len(buffer) and buffer[position].isspace():
-                position += 1
-
-            if not started:
-                if position >= len(buffer):
-                    if eof:
-                        return
-                    continue
-                if buffer[position] != "[":
-                    raise ValueError(f"Expected a top-level JSON array in {path}.")
-                position += 1
-                started = True
-                continue
-
-            while position < len(buffer) and buffer[position].isspace():
-                position += 1
-            if position < len(buffer) and buffer[position] == "]":
-                return
-            if position < len(buffer) and buffer[position] == ",":
-                position += 1
-                while position < len(buffer) and buffer[position].isspace():
-                    position += 1
-
-            if position >= len(buffer):
-                if eof:
-                    raise ValueError(f"Unexpected end of JSON array in {path}.")
-                continue
-
-            try:
-                item, end = decoder.raw_decode(buffer, position)
-            except json.JSONDecodeError:
-                if eof:
-                    raise
-                chunk = handle.read(chunk_size)
-                if not chunk:
-                    eof = True
-                else:
-                    if position:
-                        buffer = buffer[position:]
-                        position = 0
-                    buffer += chunk
-                continue
-
-            yield item
-            position = end
-
-
-def iter_jsonl(path: Path) -> Iterator[Any]:
-    """Read plain or gzip-compressed newline-delimited JSON one object at a time."""
-    with path.open("rb") as raw:
-        magic = raw.read(2)
-        raw.seek(0)
-        binary = gzip.GzipFile(fileobj=raw) if magic == b"\x1f\x8b" else raw
-        with io.TextIOWrapper(binary, encoding="utf-8") as handle:
-            for line in handle:
-                line = line.strip()
-                if line:
-                    yield json.loads(line)
-
-
 def _resolved_expansion(
     product: Product,
     expansion_map: dict[str, dict[str, str]],
@@ -484,23 +394,23 @@ def _resolved_expansion(
         key = str(product.expansion_id)
         override = overrides.get(key)
         if override:
-            return override, "Manual override", "override"
+            return normalize_expansion_code(override), "Manual override", "override"
         mapped = expansion_map.get(key)
         if mapped:
-            code = str(mapped.get("code") or "").strip()
+            code = normalize_expansion_code(mapped.get("code"))
             name = str(mapped.get("name") or "").strip()
             source = str(mapped.get("source") or "mtgjson")
             return code or name, name, source
         if supplemental_map:
             mapped = supplemental_map.get(key)
             if mapped:
-                code = str(mapped.get("code") or "").strip()
+                code = normalize_expansion_code(mapped.get("code"))
                 name = str(mapped.get("name") or "").strip()
                 return code or name, name, "external_csv"
         if catalog_verified_map:
             mapped = catalog_verified_map.get(key)
             if mapped:
-                code = str(mapped.get("code") or "").strip()
+                code = normalize_expansion_code(mapped.get("code"))
                 name = str(mapped.get("name") or "").strip()
                 return code or name, name, "catalog_verified"
     if product.expansion_id is None:
@@ -595,7 +505,7 @@ def write_merged(rows: list[dict[str, Any]], generated_at: str) -> None:
         "source": {
             "price_guide": CARDMARKET_PRICE_GUIDE_URL,
             "product_list": CARDMARKET_PRODUCT_LIST_URL,
-            "expansion_mapping": "MTGJSON mcmId/mcmIdExtras → set code, bundled expansion_map.csv fallback, then verified catalog anchors",
+            "expansion_mapping": "bundled Cardmarket expansion_ids_map.txt, then manual overrides and bundled fallback maps",
         },
         "row_count": len(rows),
         "rows": rows,
@@ -714,6 +624,16 @@ def load_merged_rows() -> list[dict[str, Any]]:
     return rows
 
 
+SPECIAL_HARERUYA_VARIANT_PHRASES = (
+    "【Surge・Foil】",
+    "■RetroF■",
+    "【Galaxy Foil】",
+    "【Chocobo Track・Foil】",
+    "【Foil Etched】",
+    "【Fracture・Foil】",
+)
+
+
 class LocalCardmarketIndex:
     """Read-only local index for Hareruya result enrichment."""
 
@@ -739,18 +659,59 @@ class LocalCardmarketIndex:
         self._by_key = index
         self._mtime_ns = mtime
 
-    def lookup(self, card_name: str, expansion: str, foil: bool = False) -> dict[str, Any] | None:
+    def lookup(
+        self,
+        card_name: str,
+        expansion: str,
+        foil: bool = False,
+        hareruya_title: str = "",
+    ) -> dict[str, Any] | None:
         with self._lock:
             self._refresh_if_needed()
             candidates = self._by_key.get((normalize_name(card_name), normalize_name(expansion)), [])
             if not candidates:
                 return None
+
             price_key = "foil" if foil else "nonfoil"
-            for row in candidates:
-                data = row.get(price_key)
-                if isinstance(data, dict) and any(value is not None for value in data.values()):
-                    return row
-            return candidates[0]
+            priced_candidates = [
+                row
+                for row in candidates
+                if isinstance(row.get(price_key), dict)
+                and any(value is not None for value in row[price_key].values())
+            ]
+            if not priced_candidates:
+                return candidates[0]
+
+            # When Cardmarket has multiple variants for the same card and expansion,
+            # choose by the relevant displayed trend price rather than insertion order.
+            # Normally we take the cheapest trend. Certain Hareruya variant titles are
+            # intentionally matched to the most expensive available trend.
+            reverse = any(
+                phrase.casefold() in str(hareruya_title).casefold()
+                for phrase in SPECIAL_HARERUYA_VARIANT_PHRASES
+            )
+            trended_candidates = [
+                row
+                for row in priced_candidates
+                if row.get(price_key, {}).get("trend") is not None
+            ]
+            if trended_candidates:
+                return sorted(
+                    trended_candidates,
+                    key=lambda row: (
+                        float(row[price_key]["trend"]),
+                        int(row.get("product_id") or 0),
+                    ),
+                    reverse=reverse,
+                )[0]
+
+            # If all matching records lack a trend value, retain deterministic fallback
+            # behavior based on product ID.
+            return sorted(
+                priced_candidates,
+                key=lambda row: int(row.get("product_id") or 0),
+                reverse=False,
+            )[0]
 
 
 LOCAL_INDEX = LocalCardmarketIndex()
@@ -774,31 +735,16 @@ def download_and_merge(progress: ProgressCallback | None = None) -> dict[str, An
         )
     progress(42, f"Loaded {len(products):,} products and {len(prices):,} price records.")
 
-    # This is the persistent set-map build. It deliberately happens before
-    # the merged table is written, so the reference file exists even if a
-    # later step fails. MTGJSON SetList provides mcmId/mcmIdExtras -> code.
-    previous_map = load_expansion_set_map()
-    try:
-        progress(48, "Downloading MTGJSON expansion map…")
-        _download_json(MTGJSON_SET_LIST_URL, MTGJSON_SET_LIST_FILE)
-        expansion_map = build_expansion_set_map(MTGJSON_SET_LIST_FILE)
-        if not expansion_map:
-            raise RuntimeError("MTGJSON SetList did not contain any Cardmarket set IDs.")
-        map_generated_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-        _atomic_write_json(EXPANSION_SET_MAP_FILE, expansion_map)
-        _atomic_write_json(EXPANSION_SET_MAP_STATUS_FILE, {
-            "source": MTGJSON_SET_LIST_URL,
-            "updated_at": map_generated_at,
-            "mapped_expansion_ids": len(expansion_map),
-        })
-    except Exception as exc:
-        expansion_map = previous_map
-        if expansion_map:
-            progress(65, f"Using previous local expansion map because the latest map refresh failed: {exc}")
-        else:
-            progress(65, f"No expansion map is available; unmapped Cardmarket IDs will be retained: {exc}")
-    finally:
-        MTGJSON_SET_LIST_FILE.unlink(missing_ok=True)
+    # Expansion mapping is bundled with the application. The source file was
+    # checked against the current Cardmarket product catalog: every distinct
+    # idExpansion currently present in that catalog exists in this map.
+    progress(48, "Loading bundled Cardmarket expansion map…")
+    expansion_map = load_expansion_set_map()
+    if not expansion_map:
+        raise RuntimeError(
+            "Bundled Cardmarket expansion_ids_map.txt is missing or contains no usable expansions."
+        )
+    progress(55, f"Loaded {len(expansion_map):,} bundled expansion mappings.")
 
     overrides = load_expansion_overrides()
     supplemental_map = load_supplemental_expansion_map()

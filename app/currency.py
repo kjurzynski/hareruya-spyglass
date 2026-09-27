@@ -18,7 +18,3 @@ def get_eur_jpy_rate(timeout: float = 10.0) -> Decimal:
     if rate <= 0:
         raise RuntimeError("Frankfurter returned a non-positive EUR/JPY rate.")
     return rate
-
-
-def yen_to_eur(yen: int, eur_jpy_rate: Decimal) -> Decimal:
-    return (Decimal(yen) / eur_jpy_rate).quantize(Decimal("0.01"))

@@ -62,7 +62,7 @@ class JobStatus(BaseModel):
     status: Literal["queued", "running", "complete", "error"]
     completed: int
     total: int
-    results: list[CardResultOut] = []
+    results: list[CardResultOut] = Field(default_factory=list)
     error: str | None = None
     output: OutputMode = "cheapest"
     eur_jpy_rate: float | None = None

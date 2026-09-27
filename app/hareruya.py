@@ -302,7 +302,7 @@ def parse_page(html: str) -> tuple[list[Listing], int]:
                 price=price,
                 language=language_match.group(1).upper() if language_match else "Unknown",
                 expansion=expansion_match.group(1).strip() if expansion_match else "Unknown",
-                foil=bool(re.search(r"\bfoil\b", title, re.I) or "retrof" in title.casefold()),
+                foil=bool(re.search(r"\bfoil\b", title, re.I)),
                 title=title,
                 stock=extract_stock(item),
                 url=listing_url,

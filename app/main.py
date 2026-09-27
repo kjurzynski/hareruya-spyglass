@@ -70,7 +70,7 @@ def get_job(job_id: str):
     for result in job.results:
         listing_out = []
         for row in result.rows:
-            cardmarket_row = LOCAL_INDEX.lookup(result.card_name, row.expansion, row.foil)
+            cardmarket_row = LOCAL_INDEX.lookup(result.card_name, row.expansion, row.foil, row.title)
             cardmarket = None
             if cardmarket_row:
                 nonfoil = cardmarket_row.get("nonfoil") or {}

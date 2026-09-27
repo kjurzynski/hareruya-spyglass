@@ -13,6 +13,46 @@ let pollTimer = null;
 let runStartedAt = 0;
 let timerInterval = null;
 
+const HARERUYA_SESSION_KEY = 'hareruyaSpyglass.session.v1';
+
+function saveHareruyaSession(results, output, eurJpyRate) {
+  try {
+    const payload = {
+      cards: cardsEl.value,
+      finish: finishEl.value,
+      language: languageEl.value,
+      output,
+      results,
+      eurJpyRate,
+    };
+    sessionStorage.setItem(HARERUYA_SESSION_KEY, JSON.stringify(payload));
+  } catch (_) {
+    // Ignore storage quota/privacy errors. Search functionality must continue normally.
+  }
+}
+
+function restoreHareruyaSession() {
+  try {
+    const raw = sessionStorage.getItem(HARERUYA_SESSION_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (!saved || !Array.isArray(saved.results) || !saved.results.length) return;
+
+    if (typeof saved.cards === 'string') cardsEl.value = saved.cards;
+    if (typeof saved.finish === 'string') finishEl.value = saved.finish;
+    if (typeof saved.language === 'string') languageEl.value = saved.language;
+    if (typeof saved.output === 'string') {
+      const outputRadio = document.querySelector(`input[name="output"][value="${CSS.escape(saved.output === 'both' ? 'both' : saved.output === 'individual' ? 'individual' : 'cheapest')}"]`);
+      if (outputRadio) outputRadio.checked = true;
+    }
+    render(saved.results, saved.output || 'cheapest', saved.eurJpyRate ?? null);
+    renderSearchWarnings(saved.results);
+    statusEl.textContent = 'Restored previous search results.';
+  } catch (_) {
+    // Corrupt/stale session state should never prevent the app from loading.
+  }
+}
+
 
 function renderSearchWarnings(results) {
   if (!warningsEl) return;
@@ -126,8 +166,8 @@ function mobileCardMarkup(row, cardName = '', eurJpyRate = null, colspan = 8) {
     : '<div class="mobile-card-image mobile-card-image-empty" aria-hidden="true">No image</div>';
   const finish = finishText(row);
   const finishClass = row.foil ? ' foil' : ' nonfoil';
-  const ambiguousClass = row.cardmarket?.ambiguous ? ' cardmarket-ambiguous' : '';
-  const card = `<div class="mobile-listing-card${ambiguousClass}">
+  const ambiguousPriceClass = row.cardmarket?.ambiguous ? ' cardmarket-ambiguous-prices' : '';
+  const card = `<div class="mobile-listing-card">
       <div class="mobile-card-media${row.foil ? ' foil-preview' : ''}">${image}</div>
       <div class="mobile-card-info">
         <div class="mobile-card-name" title="${title}">${name}</div>
@@ -137,7 +177,7 @@ function mobileCardMarkup(row, cardName = '', eurJpyRate = null, colspan = 8) {
           <span class="mobile-badge badge-expansion">${escapeHtml(row.expansion)}</span>
           <span class="mobile-badge badge-finish${finishClass}">${finish}</span>
         </div>
-        <div class="mobile-cardmarket">${cardmarketPrices(row, false, true)}</div>
+        <div class="mobile-cardmarket${ambiguousPriceClass}">${cardmarketPrices(row, false, true)}</div>
       </div>
       ${row.url ? '<span class="mobile-card-chevron" aria-hidden="true">›</span>' : ''}
     </div>`;
@@ -162,13 +202,13 @@ function renderTable(container, rows, keyPrefix, eurJpyRate = null, options = {}
   function draw() {
     const filtered = sortRows(filterRows(rows, state), state.sort, state.direction);
     const arrow = key => state.sort === key ? (state.direction === 'asc' ? ' ↑' : ' ↓') : '';
-    const body = filtered.length ? filtered.map(row => `<tr class="listing-row${row.cardmarket?.ambiguous ? ' cardmarket-ambiguous-row' : ''}">
+    const body = filtered.length ? filtered.map(row => `<tr class="listing-row">
       <td class="price" data-label="Price">${money(row.price, eurJpyRate)}</td>
       <td data-label="Language">${escapeHtml(row.language)}</td>
       <td data-label="Expansion">${escapeHtml(row.expansion)}</td>
       <td data-label="Finish">${finishText(row)}</td>
       <td data-label="Full title">${escapeHtml(row.title)}</td>
-      <td data-label="Cardmarket">${cardmarketPrices(row)}</td>
+      <td class="cardmarket-price-cell${row.cardmarket?.ambiguous ? ' cardmarket-ambiguous-price-cell' : ''}" data-label="Cardmarket">${cardmarketPrices(row)}</td>
       <td data-label="Listing">${listingButton(row)}</td>
       <td data-label="Preview">${previewButton(row)}</td>
       ${mobileCardMarkup(row, options.cardName || '', eurJpyRate)}
@@ -349,7 +389,7 @@ function renderCheapest(results, eurJpyRate = null) {
     section.querySelector('.table-count').textContent = `${visible.length} / ${rows.length}`;
     section.querySelector('tbody').innerHTML = visible.map(r => r.price === null ?
       `<tr><td data-label="Card">${escapeHtml(r.card)}</td><td colspan="8" class="no-results">No matching in-stock listing${r.error ? `: ${escapeHtml(r.error)}` : ''}</td></tr>` :
-      `<tr class="listing-row${r.cardmarket?.ambiguous ? ' cardmarket-ambiguous-row' : ''}"><td data-label="Card">${escapeHtml(r.card)}</td><td class="price" data-label="Price">${money(r.price, eurJpyRate)}</td><td data-label="Language">${escapeHtml(r.language)}</td><td data-label="Expansion">${escapeHtml(r.expansion)}</td><td data-label="Finish">${escapeHtml(r.finish)}</td><td data-label="Full title">${escapeHtml(r.title)}</td><td data-label="Cardmarket">${cardmarketPrices(r)}</td><td data-label="Listing">${listingButton(r)}</td><td data-label="Preview">${previewButton(r)}</td>${mobileCardMarkup(r, r.card, eurJpyRate, 9)}</tr>`
+      `<tr class="listing-row"><td data-label="Card">${escapeHtml(r.card)}</td><td class="price" data-label="Price">${money(r.price, eurJpyRate)}</td><td data-label="Language">${escapeHtml(r.language)}</td><td data-label="Expansion">${escapeHtml(r.expansion)}</td><td data-label="Finish">${escapeHtml(r.finish)}</td><td data-label="Full title">${escapeHtml(r.title)}</td><td class="cardmarket-price-cell${r.cardmarket?.ambiguous ? ' cardmarket-ambiguous-price-cell' : ''}" data-label="Cardmarket">${cardmarketPrices(r)}</td><td data-label="Listing">${listingButton(r)}</td><td data-label="Preview">${previewButton(r)}</td>${mobileCardMarkup(r, r.card, eurJpyRate, 9)}</tr>`
     ).join('');
     for (const th of section.querySelectorAll('th[data-sort]')) {
       const active = state.sort === th.dataset.sort;
@@ -563,6 +603,7 @@ async function poll(jobId) {
     if (job.status === 'complete') {
       render(job.results, job.output, job.eur_jpy_rate);
       renderSearchWarnings(job.results);
+      saveHareruyaSession(job.results, job.output, job.eur_jpy_rate);
       stopTimer();
       checkEl.disabled = false;
       return;
@@ -709,5 +750,6 @@ window.addEventListener('resize', () => {
 });
 
 syncMobileFilters();
+restoreHareruyaSession();
 
 

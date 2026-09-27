@@ -17,6 +17,59 @@ let lastState = null;
 let freshnessTimer = null;
 let hasSearched = false;
 
+const CARDMARKET_SESSION_KEY = 'hareruyaSpyglass.cardmarket.v1';
+
+function saveCardmarketSession(rows) {
+  try {
+    const payload = {
+      query: queryEl.value,
+      expansion: expansionEl.value,
+      exact: exactEl.checked,
+      page,
+      total,
+      rows,
+      lastUpdatedAt,
+      hasSearched,
+    };
+    sessionStorage.setItem(CARDMARKET_SESSION_KEY, JSON.stringify(payload));
+  } catch (_) {
+    // Ignore storage quota/privacy errors.
+  }
+}
+
+function restoreCardmarketSession() {
+  try {
+    const raw = sessionStorage.getItem(CARDMARKET_SESSION_KEY);
+    if (!raw) return false;
+    const saved = JSON.parse(raw);
+    if (!saved || !saved.hasSearched || !Array.isArray(saved.rows)) return false;
+
+    queryEl.value = typeof saved.query === 'string' ? saved.query : '';
+    expansionEl.value = typeof saved.expansion === 'string' ? saved.expansion : '';
+    exactEl.checked = Boolean(saved.exact);
+    page = Number.isInteger(saved.page) && saved.page > 0 ? saved.page : 1;
+    total = Number.isFinite(Number(saved.total)) ? Number(saved.total) : saved.rows.length;
+    lastUpdatedAt = saved.lastUpdatedAt || null;
+    hasSearched = true;
+
+    renderCardmarketRows(saved.rows);
+    const pageCount = Math.max(1, Math.ceil(total / pageSize));
+    statusEl.textContent = `Local dataset • ${total.toLocaleString()} matching rows`;
+    pageStatusEl.textContent = `Page ${page} of ${pageCount}`;
+    prevEl.disabled = page <= 1;
+    nextEl.disabled = page >= pageCount;
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function renderCardmarketRows(rows) {
+  bodyEl.innerHTML = rows.length
+    ? rows.map(row => `<tr><td>${escapeHtml(row.card_name)}</td><td>${escapeHtml(row.expansion)}</td><td>${escapeHtml(row.expansion_name || 'Not found')}</td><td>${variantHtml(row.nonfoil)}</td><td>${variantHtml(row.foil)}</td><td>${cardmarketLinkHtml(row)}</td>${cardmarketMobileMarkup(row)}</tr>`).join('')
+    : '<tr><td colspan="6" class="empty">No local rows matched the current search.</td></tr>';
+}
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 }
@@ -111,7 +164,8 @@ async function load() {
     const data = await response.json();
     if (!response.ok) throw new Error(data.detail || 'Could not load local Cardmarket data.');
     total = Number(data.total || 0);
-    bodyEl.innerHTML = data.rows.length ? data.rows.map(row => `<tr><td>${escapeHtml(row.card_name)}</td><td>${escapeHtml(row.expansion)}</td><td>${escapeHtml(row.expansion_name || "Not found")}</td><td>${variantHtml(row.nonfoil)}</td><td>${variantHtml(row.foil)}</td><td>${cardmarketLinkHtml(row)}</td>${cardmarketMobileMarkup(row)}</tr>`).join('') : '<tr><td colspan="6" class="empty">No local rows matched the current search.</td></tr>'; 
+    renderCardmarketRows(data.rows);
+    saveCardmarketSession(data.rows);
     statusEl.textContent = `Local dataset • ${total.toLocaleString()} matching rows`;
     const pageCount = Math.max(1, Math.ceil(total / pageSize));
     pageStatusEl.textContent = `Page ${page} of ${pageCount}`;
@@ -147,4 +201,5 @@ async function watchFreshness() {
   freshnessTimer = setTimeout(watchFreshness, 5000);
 }
 
+restoreCardmarketSession();
 watchFreshness();
