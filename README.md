@@ -1,20 +1,3 @@
-# Hareruya Spyglass Web App
-
-A local web version of the supplied Hareruya price-checking Python program.
-
-## Features
-
-- Paste a card list directly into the browser.
-- Choose `all`, `foil`, or `nonfoil` listings.
-- Choose one output mode: `Cheapest (one option per card)`, `Individual (all listings for each card)`, or `Both`.
-- Show `All results` for each card in switchable tabs instead of a long list of tables.
-- Sort tables by price, language, expansion, finish, or full title by clicking column headers.
-- Filter each table by maximum price, language, expansion, finish, and title text.
-- Open the individual Hareruya product/listing link in a new browser tab.
-- Preview card images in a floating overlay that stays fully inside the browser viewport.
-- Size result windows to the table content while keeping them centered; horizontal scrolling appears only when content exceeds the viewport.
-- Background jobs with progress polling, elapsed-time display, and ETA for searches of 10 or more cards.
-
 ## Local setup
 
 ### Windows PowerShell
@@ -42,6 +25,7 @@ uvicorn app.main:app --reload
 ```
 
 Open http://127.0.0.1:8000
+<<<<<<< HEAD
 
 API documentation is available at http://127.0.0.1:8000/docs
 
@@ -89,3 +73,5 @@ On environment startup, the app checks whether the local snapshot is current and
 The local merged table can be browsed at `http://127.0.0.1:8000/cardmarket`. The main page exposes only a small link to this read-only view. Searches and pagination on that page read the generated local JSON and do not contact Cardmarket or MTGJSON.
 
 The reference directory also contains `card_catalog_verified_expansion_map.json`. This is a small, evidence-backed fallback built from Cardmarket catalog products whose expansion IDs were separately verified against their exact Cardmarket set codes. It is used only after the existing MTGJSON and bundled external maps, and unmapped IDs remain reported rather than being guessed.
+=======
+>>>>>>> 6092263aa7f116d46436233cb41e079ef8e2760b
