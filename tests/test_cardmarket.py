@@ -218,6 +218,58 @@ def test_api_table_exact_search_is_optional(monkeypatch, tmp_path):
     assert [row["card_name"] for row in exact.json()["rows"]] == ["Tithe"]
 
 
+def test_api_table_excludes_art_series_before_pagination(monkeypatch, tmp_path):
+    import app.main as main
+    import app.cardmarket_data as cm
+    from fastapi.testclient import TestClient
+
+    merged = tmp_path / "cardmarket_prices.json"
+    merged.write_text(json.dumps({"rows": [
+        {"product_id": 1, "card_name": "Flicker", "expansion": "SOA", "nonfoil": {}, "foil": {}},
+        {"product_id": 2, "card_name": "Art Series: Flickering Hound", "expansion": "SLD", "nonfoil": {}, "foil": {}},
+        {"product_id": 3, "card_name": "Flickerform", "expansion": "SOA", "nonfoil": {}, "foil": {}},
+    ]}), encoding="utf-8")
+    monkeypatch.setattr(cm, "MERGED_JSON_FILE", merged)
+
+    client = TestClient(main.app)
+    response = client.get("/api/cardmarket/table?q=Flic&page=1&page_size=1")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["total"] == 2
+    assert [row["card_name"] for row in payload["rows"]] == ["Flicker"]
+
+    response = client.get("/api/cardmarket/table?q=Flic&page=2&page_size=1")
+    assert response.status_code == 200
+    assert [row["card_name"] for row in response.json()["rows"]] == ["Flickerform"]
+
+
+def test_cardmarket_suggestions_exclude_art_series_and_rank_prefix_matches(monkeypatch, tmp_path):
+    import app.main as main
+    import app.cardmarket_data as cm
+    from fastapi.testclient import TestClient
+
+    merged = tmp_path / "cardmarket_prices.json"
+    merged.write_text(json.dumps({"rows": [
+        {"product_id": 1, "card_name": "Flicker", "expansion": "SOA"},
+        {"product_id": 2, "card_name": "Flicker of Fate", "expansion": "M20"},
+        {"product_id": 3, "card_name": "Flickerform", "expansion": "CMD"},
+        {"product_id": 4, "card_name": "Art Series: Flickering Hound", "expansion": "SLD"},
+        {"product_id": 5, "card_name": "Flickering Ward", "expansion": "TSP"},
+    ]}), encoding="utf-8")
+    monkeypatch.setattr(cm, "MERGED_JSON_FILE", merged)
+
+    client = TestClient(main.app)
+    response = client.get("/api/cardmarket/suggestions?q=Flic")
+    assert response.status_code == 200
+    suggestions = response.json()["suggestions"]
+    assert suggestions[:3] == ["Flicker", "Flicker of Fate", "Flickerform"]
+    assert "Art Series: Flickering Hound" not in suggestions
+
+    short = client.get("/api/cardmarket/suggestions?q=Fli")
+    assert short.status_code == 200
+    assert short.json()["suggestions"] == []
+
+
 def test_api_table_returns_populated_local_rows(monkeypatch, tmp_path):
     import app.main as main
     import app.cardmarket_data as cm

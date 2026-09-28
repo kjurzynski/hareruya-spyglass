@@ -3,12 +3,13 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from .cardmarket_jobs import CardmarketUpdateManager, start_daily_scheduler, status_payload
 from .cardmarket_data import LOCAL_INDEX
 from .jobs import JobManager
+from .scryfall import ScryfallError, get_cardmarket_image_url
 from .models import (
     CardResultOut,
     CardmarketPriceOut,
@@ -119,9 +120,30 @@ def get_job(job_id: str):
     )
 
 
+@app.get("/api/cardmarket/image/{product_id}", include_in_schema=False)
+def get_cardmarket_image(product_id: int):
+    try:
+        image_url = get_cardmarket_image_url(product_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except ScryfallError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    if not image_url:
+        raise HTTPException(status_code=404, detail="No Scryfall image was found for this Cardmarket product.")
+    return RedirectResponse(
+        url=image_url,
+        status_code=302,
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
+
+
 @app.get("/api/cardmarket/status")
 def get_cardmarket_status():
     return status_payload(cardmarket_manager)
+
+
+def _is_cardmarket_art_series_name(name: str) -> bool:
+    return "art series:" in str(name).casefold()
 
 
 @app.get("/api/cardmarket/table")
@@ -140,7 +162,10 @@ def get_cardmarket_table(
     wanted_expansion = normalize_name(expansion)
     rows = []
     for row in load_merged_rows():
-        card_name = normalize_name(str(row.get("card_name", "")))
+        raw_card_name = str(row.get("card_name", ""))
+        if _is_cardmarket_art_series_name(raw_card_name):
+            continue
+        card_name = normalize_name(raw_card_name)
         if wanted and (card_name != wanted if exact else wanted not in card_name):
             continue
         if wanted_expansion and wanted_expansion != normalize_name(str(row.get("expansion", ""))):
@@ -148,3 +173,32 @@ def get_cardmarket_table(
         rows.append(row)
     start = (page - 1) * page_size
     return {"page": page, "page_size": page_size, "total": len(rows), "rows": rows[start:start + page_size]}
+
+
+@app.get("/api/cardmarket/suggestions")
+def get_cardmarket_suggestions(q: str = "", limit: int = 8):
+    from .cardmarket_data import load_merged_rows, normalize_name
+
+    wanted = normalize_name(q)
+    limit = max(1, min(15, limit))
+    if len(wanted) < 4:
+        return {"query": q, "suggestions": []}
+
+    names = {}
+    for row in load_merged_rows():
+        raw_name = str(row.get("card_name", "")).strip()
+        if not raw_name or _is_cardmarket_art_series_name(raw_name):
+            continue
+        normalized = normalize_name(raw_name)
+        if not normalized or wanted not in normalized:
+            continue
+        names.setdefault(normalized, raw_name)
+
+    ranked = sorted(
+        names.values(),
+        key=lambda name: (
+            not normalize_name(name).startswith(wanted),
+            normalize_name(name),
+        ),
+    )
+    return {"query": q, "suggestions": ranked[:limit]}
