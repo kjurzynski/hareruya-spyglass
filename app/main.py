@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from .cardmarket_jobs import CardmarketUpdateManager, start_daily_scheduler, status_payload
 from .cardmarket_data import LOCAL_INDEX
 from .jobs import JobManager
-from .scryfall import ScryfallError, get_cardmarket_image_url
+from .scryfall import ScryfallError, get_cardmarket_card_info, get_cardmarket_image_url
 from .models import (
     CardResultOut,
     CardmarketPriceOut,
@@ -118,6 +118,23 @@ def get_job(job_id: str):
         output=job.output,
         eur_jpy_rate=job.eur_jpy_rate,
     )
+
+
+@app.get("/api/cardmarket/scryfall/{product_id}", include_in_schema=False)
+def get_cardmarket_scryfall_info(product_id: int):
+    try:
+        info = get_cardmarket_card_info(product_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except ScryfallError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    if info is None:
+        raise HTTPException(status_code=404, detail="No Scryfall card was found for this Cardmarket product.")
+    return {
+        "image_url": info.image_url,
+        "promo_types": list(info.promo_types),
+        "promo_type_labels": list(info.promo_type_labels),
+    }
 
 
 @app.get("/api/cardmarket/image/{product_id}", include_in_schema=False)

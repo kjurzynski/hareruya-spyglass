@@ -270,6 +270,28 @@ def test_cardmarket_suggestions_exclude_art_series_and_rank_prefix_matches(monke
     assert short.json()["suggestions"] == []
 
 
+def test_cardmarket_scryfall_endpoint_returns_promo_types(monkeypatch):
+    import app.main as main
+    from app.scryfall import ScryfallCardInfo
+    from fastapi.testclient import TestClient
+
+    monkeypatch.setattr(
+        main,
+        "get_cardmarket_card_info",
+        lambda product_id: ScryfallCardInfo(
+            image_url="https://cards.scryfall.io/normal/example.jpg",
+            promo_types=("surgefoil", "universesbeyond"),
+            promo_type_labels=("Surge Foil",),
+        ),
+    )
+    response = TestClient(main.app).get("/api/cardmarket/scryfall/900736")
+    assert response.status_code == 200
+    assert response.json()["image_url"].endswith("example.jpg")
+    assert response.json()["promo_types"] == ["surgefoil", "universesbeyond"]
+    assert response.json()["promo_type_labels"] == ["Surge Foil"]
+
+
+
 def test_api_table_returns_populated_local_rows(monkeypatch, tmp_path):
     import app.main as main
     import app.cardmarket_data as cm
@@ -488,6 +510,12 @@ def test_frontend_contains_cardmarket_warning_and_link_rendering():
     assert "Cardmarket prices exclude shipping and are not differentiated by card language." in index_html
     assert "idProduct=" in cardmarket_js
     assert "cm-link-button-disabled" in cardmarket_js
+    assert "data-scryfall-promo-product-id" in cardmarket_js
+    assert "promo_type_labels" in cardmarket_js
+    assert "/api/cardmarket/scryfall/" in cardmarket_js
+    assert "isMissingNonfoilPriceData" in cardmarket_js
+    assert "variantHtml(row.nonfoil, true)" in cardmarket_js
+    assert "mobileVariantHtml('Non-foil', row.nonfoil, true)" in cardmarket_js
 
 
 def test_is_stale_returns_true_when_local_snapshot_is_missing(monkeypatch, tmp_path):

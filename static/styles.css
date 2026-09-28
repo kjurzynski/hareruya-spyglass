@@ -134,6 +134,9 @@ tr:last-child td { border-bottom:0; }
 }
 
 .cardmarket-prices { display:flex; flex-direction:column; gap:4px; min-width:300px; line-height:1.2; }
+.cm-table-card-name { font-weight:800; }
+.cm-promo-types { margin-top:3px; color:var(--red); font-size:10px; line-height:1.2; font-weight:800; letter-spacing:.01em; }
+.cm-grid-title-main, .cm-mobile-title-main { min-width:0; }
 .cardmarket-heading { font-size:11px; font-weight:800; color:var(--text); }
 .cardmarket-heading-cell { width:330px; cursor:default; }
 .cardmarket-variant { display:flex; flex-wrap:wrap; gap:5px 9px; align-items:baseline; font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; }
@@ -201,7 +204,9 @@ td.cardmarket-ambiguous-price-cell { background:#fff9df; }
 .cm-mobile-image-missing { border:1px solid var(--border); }
 .cm-mobile-info { grid-column:2; grid-row:1; min-width:0; align-self:stretch; display:flex; align-items:center; justify-content:center; overflow:hidden; }
 .cm-mobile-title-line { width:100%; min-width:0; line-height:1.14; }
+.cm-mobile-title-main { width:100%; min-width:0; }
 .cm-mobile-name { min-width:0; font-size:13px; line-height:1.14; font-weight:800; color:var(--text); overflow-wrap:anywhere; }
+.cm-mobile-title-line .cm-promo-types { margin-top:3px; font-size:9px; }
 .cm-mobile-expansion { display:inline-flex; align-items:center; max-width:100%; margin-left:4px; padding:1px 6px; border-radius:999px; background:#e8f6eb; color:#286b43; font-size:9px; line-height:1.15; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; vertical-align:baseline; }
 .cm-mobile-prices { grid-column:2; grid-row:2; min-width:0; display:grid; gap:1px; align-self:end; }
 .cm-mobile-price-head, .cm-mobile-price-row { min-width:0; display:grid; grid-template-columns:49px repeat(3,minmax(0,1fr)); gap:2px; align-items:center; }
@@ -228,6 +233,7 @@ td.cardmarket-ambiguous-price-cell { background:#fff9df; }
 .cm-grid-link:hover .cm-grid-card, .cm-grid-link:focus-visible .cm-grid-card { transform:translateY(-1px); box-shadow:0 5px 14px rgba(0,0,0,.08); }
 .cm-grid-link:focus-visible { outline:2px solid var(--red); outline-offset:3px; border-radius:11px; }
 .cm-grid-title { min-width:0; min-height:38px; padding:2px 2px 8px; font-size:14px; line-height:1.18; font-weight:800; overflow-wrap:anywhere; }
+.cm-grid-title .cm-promo-types { margin-top:4px; font-size:10px; }
 .cm-grid-expansion { display:inline-flex; align-items:center; margin-left:4px; padding:2px 7px; border-radius:999px; background:#e8f6eb; color:#286b43; font-size:9px; line-height:1.15; font-weight:800; white-space:nowrap; vertical-align:middle; }
 .cm-grid-image-frame { width:min(238px,100%); max-width:100%; aspect-ratio:488 / 680; justify-self:center; align-self:center; margin:10px auto; overflow:hidden; border-radius:8px; }
 .cm-grid-image-frame .cm-grid-image, .cm-grid-image-frame .cm-grid-image-placeholder { width:100%; height:100%; }

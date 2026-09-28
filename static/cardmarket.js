@@ -29,6 +29,9 @@ let mobileLoadObserver = null;
 let desktopView = 'grid';
 let suggestionTimer = null;
 let suggestionRequestId = 0;
+let scryfallInfoObserver = null;
+let scryfallInfoCache = new Map();
+let scryfallInfoPromises = new Map();
 
 const CARDMARKET_SESSION_KEY = 'hareruyaSpyglass.cardmarket.v1';
 
@@ -156,40 +159,114 @@ function restoreCardmarketSession() {
   }
 }
 
-let mobileImageObserver = null;
+function cardmarketProductId(row) {
+  const productId = Number(row?.product_id);
+  return Number.isInteger(productId) && productId > 0 ? productId : null;
+}
 
-function prepareCardmarketImages() {
-  const images = document.querySelectorAll('.cardmarket-page img[data-scryfall-image]');
-  if (!images.length) return;
-  if (mobileImageObserver) mobileImageObserver.disconnect();
+function promoMarkup(row, className = 'cm-promo-types') {
+  const productId = cardmarketProductId(row);
+  if (productId === null) return '';
+  return `<div class="${className}" data-scryfall-promo-product-id="${productId}" hidden></div>`;
+}
 
-  const loadImage = image => {
-    if (image.src || !image.dataset.scryfallImage) return;
-    image.addEventListener('error', () => {
-      image.hidden = true;
-      image.removeAttribute('src');
-      image.classList.add('cm-mobile-image-missing');
-      const placeholder = image.parentElement?.querySelector('.cm-image-placeholder');
-      if (placeholder) {
-        placeholder.hidden = false;
-        placeholder.setAttribute('aria-hidden', 'false');
+async function getCardmarketScryfallInfo(productId) {
+  const normalizedId = Number(productId);
+  if (!Number.isInteger(normalizedId) || normalizedId <= 0) return null;
+  if (scryfallInfoCache.has(normalizedId)) return scryfallInfoCache.get(normalizedId);
+  if (scryfallInfoPromises.has(normalizedId)) return scryfallInfoPromises.get(normalizedId);
+
+  const promise = fetch(`/api/cardmarket/scryfall/${encodeURIComponent(normalizedId)}`, { cache: 'force-cache' })
+    .then(async response => {
+      if (response.status === 404) {
+        const empty = { image_url: null, promo_types: [], promo_type_labels: [] };
+        scryfallInfoCache.set(normalizedId, empty);
+        return empty;
       }
-    }, { once: true });
-    image.src = image.dataset.scryfallImage;
-    delete image.dataset.scryfallImage;
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || 'Could not load Scryfall data.');
+      const info = {
+        image_url: typeof data.image_url === 'string' ? data.image_url : null,
+        promo_types: Array.isArray(data.promo_types) ? data.promo_types : [],
+        promo_type_labels: Array.isArray(data.promo_type_labels) ? data.promo_type_labels : [],
+      };
+      scryfallInfoCache.set(normalizedId, info);
+      return info;
+    })
+    .finally(() => scryfallInfoPromises.delete(normalizedId));
+  scryfallInfoPromises.set(normalizedId, promise);
+  return promise;
+}
+
+function applyScryfallPromoTypes(productId, labels) {
+  const selector = `[data-scryfall-promo-product-id="${productId}"]`;
+  document.querySelectorAll(selector).forEach(target => {
+    if (labels.length) {
+      target.textContent = labels.join(', ');
+      target.hidden = false;
+    } else {
+      target.hidden = true;
+      target.textContent = '';
+    }
+  });
+}
+
+function markCardmarketImageMissing(image) {
+  image.hidden = true;
+  image.removeAttribute('src');
+  image.classList.add('cm-mobile-image-missing');
+  const placeholder = image.parentElement?.querySelector('.cm-image-placeholder');
+  if (placeholder) {
+    placeholder.hidden = false;
+    placeholder.setAttribute('aria-hidden', 'false');
+  }
+}
+
+function applyScryfallImage(productId, imageUrl) {
+  const selector = `img[data-scryfall-product-id="${productId}"]`;
+  document.querySelectorAll(selector).forEach(image => {
+    if (!imageUrl) {
+      markCardmarketImageMissing(image);
+      return;
+    }
+    image.addEventListener('error', () => markCardmarketImageMissing(image), { once: true });
+    image.src = imageUrl;
+    image.removeAttribute('data-scryfall-product-id');
+  });
+}
+
+function prepareCardmarketScryfall() {
+  const targets = document.querySelectorAll('.cardmarket-page [data-scryfall-product-id], .cardmarket-page [data-scryfall-promo-product-id]');
+  if (!targets.length) return;
+  if (scryfallInfoObserver) scryfallInfoObserver.disconnect();
+
+  const loadForTarget = target => {
+    const productId = target.dataset.scryfallProductId || target.dataset.scryfallPromoProductId;
+    if (!productId || target.dataset.scryfallLoading === 'true') return;
+    target.dataset.scryfallLoading = 'true';
+    getCardmarketScryfallInfo(productId)
+      .then(info => {
+        const labels = info?.promo_type_labels || [];
+        applyScryfallPromoTypes(Number(productId), labels);
+        applyScryfallImage(Number(productId), info?.image_url || null);
+      })
+      .catch(() => {
+        applyScryfallPromoTypes(Number(productId), []);
+        applyScryfallImage(Number(productId), null);
+      });
   };
 
   if ('IntersectionObserver' in window) {
-    mobileImageObserver = new IntersectionObserver(entries => {
+    scryfallInfoObserver = new IntersectionObserver(entries => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
-        loadImage(entry.target);
-        mobileImageObserver.unobserve(entry.target);
+        loadForTarget(entry.target);
+        scryfallInfoObserver.unobserve(entry.target);
       }
     }, { rootMargin: '200px 0px' });
-    images.forEach(image => mobileImageObserver.observe(image));
+    targets.forEach(target => scryfallInfoObserver.observe(target));
   } else {
-    images.forEach(loadImage);
+    targets.forEach(loadForTarget);
   }
 }
 
@@ -198,19 +275,20 @@ function isMobileViewport() {
 }
 
 function rowMarkup(row) {
-  return `<tr><td>${escapeHtml(row.card_name)}</td><td>${escapeHtml(row.expansion)}</td><td>${escapeHtml(row.expansion_name || 'Not found')}</td><td>${variantHtml(row.nonfoil)}</td><td>${variantHtml(row.foil)}</td><td>${cardmarketActionsHtml(row)}</td>${cardmarketMobileMarkup(row)}</tr>`;
+  const name = escapeHtml(row.card_name);
+  return `<tr><td><div class="cm-table-card-name">${name}</div>${promoMarkup(row, 'cm-table-promo-types')}</td><td>${escapeHtml(row.expansion)}</td><td>${escapeHtml(row.expansion_name || 'Not found')}</td><td>${variantHtml(row.nonfoil, true)}</td><td>${variantHtml(row.foil)}</td><td>${cardmarketActionsHtml(row)}</td>${cardmarketMobileMarkup(row)}</tr>`;
 }
 
 function desktopGridMarkup(row) {
   const url = cardmarketUrl(row);
-  const imageUrl = cardmarketImageUrl(row);
   const name = escapeHtml(row.card_name || 'Card');
   const expansion = escapeHtml(row.expansion || 'Unknown');
-  const image = imageUrl
-    ? `<div class="cm-grid-image-frame"><img class="cm-grid-image" data-scryfall-image="${escapeHtml(imageUrl)}" alt="${name}" loading="lazy" decoding="async"><div class="cm-image-placeholder cm-grid-image-placeholder" hidden aria-hidden="true">Scryfall was unable to fetch image</div></div>`
+  const productId = cardmarketProductId(row);
+  const image = productId !== null
+    ? `<div class="cm-grid-image-frame"><img class="cm-grid-image" data-scryfall-product-id="${productId}" alt="${name}" loading="lazy" decoding="async"><div class="cm-image-placeholder cm-grid-image-placeholder" hidden aria-hidden="true">Scryfall was unable to fetch image</div></div>`
     : '<div class="cm-grid-image-frame"><div class="cm-image-placeholder cm-grid-image-placeholder" aria-hidden="true">Scryfall was unable to fetch image</div></div>';
-  const title = `<div class="cm-grid-title" title="${name}">${name} <span class="cm-grid-expansion">${expansion}</span></div>`;
-  const prices = `<div class="cm-grid-prices"><div class="cm-grid-price-head"><span></span><span>Low</span><span>Trend</span><span>7d</span></div>${mobileVariantHtml('Non-foil', row.nonfoil)}${mobileVariantHtml('Foil', row.foil)}</div>`;
+  const title = `<div class="cm-grid-title" title="${name}"><div class="cm-grid-title-main">${name} <span class="cm-grid-expansion">${expansion}</span></div>${promoMarkup(row)}</div>`;
+  const prices = `<div class="cm-grid-prices"><div class="cm-grid-price-head"><span></span><span>Low</span><span>Trend</span><span>7d</span></div>${mobileVariantHtml('Non-foil', row.nonfoil, true)}${mobileVariantHtml('Foil', row.foil)}</div>`;
   const content = `<article class="cm-grid-card${url ? '' : ' cm-grid-card-unavailable'}">${title}${image}${prices}</article>`;
   return url
     ? `<a class="cm-grid-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" aria-label="View ${name} on Cardmarket">${content}</a>`
@@ -233,7 +311,7 @@ function renderCardmarketRows(rows, append = false) {
         : '<div class="cm-grid-empty">No local rows matched the current search.</div>';
     }
   }
-  prepareCardmarketImages();
+  prepareCardmarketScryfall();
 }
 
 function applyDesktopView() {
@@ -259,7 +337,14 @@ function eur(value) {
   return value === null || value === undefined ? '—' : `€ ${Number(value).toFixed(2)}`;
 }
 
-function variantHtml(data) {
+function isMissingNonfoilPriceData(data) {
+  if (!data || data.low === null || data.low === undefined) return false;
+  const isMissingMetric = value => value === null || value === undefined || Number(value) === 0;
+  return isMissingMetric(data.trend) && isMissingMetric(data.avg7);
+}
+
+function variantHtml(data, isNonfoil = false) {
+  if (isNonfoil && isMissingNonfoilPriceData(data)) return '<span class="cm-muted">Not found</span>';
   if (!data) return '<span class="cm-muted">No foil data</span>';
   return `<div class="cm-variant-line"><strong>Low</strong> ${eur(data.low)}</div><div class="cm-variant-line"><strong>Trend</strong> ${eur(data.trend)}</div><div class="cm-variant-line"><strong>7d</strong> ${eur(data.avg7)}</div>`;
 }
@@ -279,24 +364,18 @@ function cardmarketLinkHtml(row) {
 }
 
 function cardmarketPreviewHtml(row) {
-  const imageUrl = cardmarketImageUrl(row);
+  const productId = cardmarketProductId(row);
   const title = escapeHtml(row.card_name || 'Card');
-  if (!imageUrl) return '<span class="preview-button preview-button-disabled" aria-disabled="true">Preview</span>';
-  return `<span class="preview-button cm-preview-button" tabindex="0" data-image-url="${escapeHtml(imageUrl)}" data-image-title="${title}" aria-label="Preview card image">Preview</span>`;
+  if (productId === null) return '<span class="preview-button preview-button-disabled" aria-disabled="true">Preview</span>';
+  return `<span class="preview-button cm-preview-button" tabindex="0" data-product-id="${productId}" data-image-title="${title}" aria-label="Preview card image">Preview</span>`;
 }
 
 function cardmarketActionsHtml(row) {
   return `<div class="cm-cardmarket-actions">${cardmarketLinkHtml(row)}${cardmarketPreviewHtml(row)}</div>`;
 }
 
-function cardmarketImageUrl(row) {
-  const productId = Number(row.product_id);
-  if (!Number.isInteger(productId) || productId <= 0) return '';
-  return `/api/cardmarket/image/${encodeURIComponent(productId)}`;
-}
-
-function mobileVariantHtml(label, data) {
-  if (!data) {
+function mobileVariantHtml(label, data, isNonfoil = false) {
+  if (!data || (isNonfoil && isMissingNonfoilPriceData(data))) {
     return `<div class="cm-mobile-price-row cm-mobile-price-row-missing"><span class="cm-mobile-variant-label">${label}</span><span class="cm-mobile-not-found">Not found</span></div>`;
   }
   return `<div class="cm-mobile-price-row"><span class="cm-mobile-variant-label">${label}</span><span class="cm-mobile-metric">${eur(data.low)}</span><span class="cm-mobile-metric">${eur(data.trend)}</span><span class="cm-mobile-metric">${eur(data.avg7)}</span></div>`;
@@ -304,17 +383,17 @@ function mobileVariantHtml(label, data) {
 
 function cardmarketMobileMarkup(row) {
   const url = cardmarketUrl(row);
-  const imageUrl = cardmarketImageUrl(row);
+  const productId = cardmarketProductId(row);
   const name = escapeHtml(row.card_name || 'Card');
   const expansion = escapeHtml(row.expansion || 'Unknown');
-  const prices = `${mobileVariantHtml('Non-foil', row.nonfoil)}${mobileVariantHtml('Foil', row.foil)}`;
-  const image = imageUrl
-    ? `<div class="cm-mobile-image-frame"><img class="cm-mobile-image" data-scryfall-image="${escapeHtml(imageUrl)}" alt="${name}" loading="lazy" decoding="async"><div class="cm-image-placeholder cm-mobile-image-placeholder" hidden aria-hidden="true">Scryfall was unable to fetch image</div></div>`
+  const prices = `${mobileVariantHtml('Non-foil', row.nonfoil, true)}${mobileVariantHtml('Foil', row.foil)}`;
+  const image = productId !== null
+    ? `<div class="cm-mobile-image-frame"><img class="cm-mobile-image" data-scryfall-product-id="${productId}" alt="${name}" loading="lazy" decoding="async"><div class="cm-image-placeholder cm-mobile-image-placeholder" hidden aria-hidden="true">Scryfall was unable to fetch image</div></div>`
     : '<div class="cm-mobile-image-frame"><div class="cm-image-placeholder cm-mobile-image-placeholder" aria-hidden="true">Scryfall was unable to fetch image</div></div>'; 
   const content = `<div class="cm-mobile-card${url ? '' : ' cm-mobile-card-unavailable'}">
       <div class="cm-mobile-image-wrap">${image}</div>
       <div class="cm-mobile-info">
-        <div class="cm-mobile-title-line"><span class="cm-mobile-name">${name}</span><span class="cm-mobile-expansion">${expansion}</span></div>
+        <div class="cm-mobile-title-line"><div class="cm-mobile-title-main"><span class="cm-mobile-name">${name}</span><span class="cm-mobile-expansion">${expansion}</span></div>${promoMarkup(row)}</div>
       </div>
       <div class="cm-mobile-prices">
         <div class="cm-mobile-price-head"><span></span><span>Low</span><span>Trend</span><span>7d</span></div>
@@ -366,22 +445,38 @@ function positionCardmarketPreview(button) {
 }
 
 function showCardmarketPreview(button) {
-  if (!button?.dataset.imageUrl) return;
+  const productId = Number(button?.dataset.productId);
+  if (!Number.isInteger(productId) || productId <= 0) return;
   if (cmPreviewHideTimer) clearTimeout(cmPreviewHideTimer);
   const overlay = ensureCardmarketPreviewOverlay();
   overlay.hidden = false;
-  overlay.innerHTML = '';
+  overlay.innerHTML = '<div class="cm-image-placeholder cm-desktop-image-placeholder">Loading…</div>';
+  positionCardmarketPreview(button);
 
-  const image = document.createElement('img');
-  image.alt = button.dataset.imageTitle || 'Card image';
-  image.src = button.dataset.imageUrl;
-  image.addEventListener('load', () => positionCardmarketPreview(button), { once: true });
-  image.addEventListener('error', () => {
+  getCardmarketScryfallInfo(productId).then(info => {
+    if (overlay.hidden) return;
+    overlay.innerHTML = '';
+    if (!info?.image_url) {
+      overlay.innerHTML = '<div class="cm-image-placeholder cm-desktop-image-placeholder">Scryfall was unable to fetch image</div>';
+      positionCardmarketPreview(button);
+      return;
+    }
+
+    const image = document.createElement('img');
+    image.alt = button.dataset.imageTitle || 'Card image';
+    image.src = info.image_url;
+    image.addEventListener('load', () => positionCardmarketPreview(button), { once: true });
+    image.addEventListener('error', () => {
+      overlay.innerHTML = '<div class="cm-image-placeholder cm-desktop-image-placeholder">Scryfall was unable to fetch image</div>';
+      positionCardmarketPreview(button);
+    }, { once: true });
+    overlay.appendChild(image);
+    positionCardmarketPreview(button);
+  }).catch(() => {
+    if (overlay.hidden) return;
     overlay.innerHTML = '<div class="cm-image-placeholder cm-desktop-image-placeholder">Scryfall was unable to fetch image</div>';
     positionCardmarketPreview(button);
-  }, { once: true });
-  overlay.appendChild(image);
-  positionCardmarketPreview(button);
+  });
 }
 
 document.addEventListener('mouseenter', event => {
@@ -413,7 +508,7 @@ window.addEventListener('resize', () => {
   applyDesktopView();
   if (!mobile && desktopView === 'grid' && gridEl && hasSearched) {
     gridEl.innerHTML = loadedRows.length ? loadedRows.map(desktopGridMarkup).join('') : '<div class="cm-grid-empty">No local rows matched the current search.</div>';
-    prepareCardmarketImages();
+    prepareCardmarketScryfall();
   }
 });
 
@@ -521,7 +616,7 @@ gridViewEl?.addEventListener('click', () => {
     const rows = isMobileViewport() ? loadedRows : loadedRows;
     if (gridEl && !isMobileViewport()) {
       gridEl.innerHTML = loadedRows.length ? loadedRows.map(desktopGridMarkup).join('') : '<div class="cm-grid-empty">No local rows matched the current search.</div>';
-      prepareCardmarketImages();
+      prepareCardmarketScryfall();
     }
     saveCardmarketSession(rows);
   }
